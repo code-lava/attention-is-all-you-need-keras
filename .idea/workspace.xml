@@ -1,0 +1,927 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="20122486-83ec-453c-a68f-cf0857abee73" name="Default" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bin/evaluate.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bin/generate.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bin/train.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/e2e/devset.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/e2e/trainset.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/wmt/raw.devset.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/wmt/raw.trainset.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/preprocessing/word_dropper.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/utils/evaluation/e2emetrics/pycocoevalcap/tokenizer/tmp3z3xdxru" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/utils/evaluation/e2emetrics/pycocoevalcap/tokenizer/tmpq1bry_h4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/utils/helper.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/utils/ljqpy.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/utils/prepare_evaluation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/pinyin.corpus.examples.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/wmt/devset.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/wmt/trainset.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dataloader.py" beforeDir="false" afterPath="$PROJECT_DIR$/preprocessing/dataloader.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/en2de_main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ljqpy.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pinyin_main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rnn_s2s.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/transformer.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/evaluation/e2emetrics/example-inputs/devel-conc.txt" beforeDir="false" afterPath="$PROJECT_DIR$/utils/evaluation/e2emetrics/example-inputs/devel-conc.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/evaluation/e2emetrics/measure_scores.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/evaluation/e2emetrics/measure_scores.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/evaluation/e2emetrics/pycocoevalcap/bleu/bleu.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/evaluation/e2emetrics/pycocoevalcap/bleu/bleu.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/evaluation/e2emetrics/pycocoevalcap/bleu/bleu_scorer.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/evaluation/e2emetrics/pycocoevalcap/bleu/bleu_scorer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/evaluation/e2emetrics/pycocoevalcap/cider/cider.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/evaluation/e2emetrics/pycocoevalcap/cider/cider.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/evaluation/e2emetrics/pycocoevalcap/cider/cider_scorer.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/evaluation/e2emetrics/pycocoevalcap/cider/cider_scorer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/evaluation/e2emetrics/pycocoevalcap/eval.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/evaluation/e2emetrics/pycocoevalcap/eval.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/evaluation/e2emetrics/pycocoevalcap/meteor/meteor.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/evaluation/e2emetrics/pycocoevalcap/meteor/meteor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/evaluation/e2emetrics/pycocoevalcap/tokenizer/ptbtokenizer.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/evaluation/e2emetrics/pycocoevalcap/tokenizer/ptbtokenizer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/evaluation/e2emetrics/pycocotools/coco.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/evaluation/e2emetrics/pycocotools/coco.py" afterDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CoverageDataManager">
+    <SUITE FILE_PATH="coverage/attention_is_all_you_need_keras$train.coverage" NAME="train Coverage Results" MODIFIED="1538258467012" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/bin" />
+    <SUITE FILE_PATH="coverage/attention_is_all_you_need_keras$generate.coverage" NAME="generate Coverage Results" MODIFIED="1538259515364" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/bin" />
+    <SUITE FILE_PATH="coverage/attention_is_all_you_need_keras$splitter.coverage" NAME="splitter Coverage Results" MODIFIED="1532133177002" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/preprocessing" />
+    <SUITE FILE_PATH="coverage/attention_is_all_you_need_keras$measure_scores.coverage" NAME="measure_scores Coverage Results" MODIFIED="1532281264968" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/utils/evaluation/e2e-metrics" />
+    <SUITE FILE_PATH="coverage/attention_is_all_you_need_keras$evaluate.coverage" NAME="evaluate Coverage Results" MODIFIED="1532388639343" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/bin" />
+    <SUITE FILE_PATH="coverage/attention_is_all_you_need_keras$prepare_evaluation.coverage" NAME="prepare_evaluation Coverage Results" MODIFIED="1532273279185" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/utils" />
+    <SUITE FILE_PATH="coverage/attention_is_all_you_need_keras$word_dropper.coverage" NAME="word_dropper Coverage Results" MODIFIED="1532365405928" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/preprocessing" />
+  </component>
+  <component name="FUSProjectUsageTrigger">
+    <session id="-1611501478">
+      <usages-collector id="statistics.lifecycle.project">
+        <counts>
+          <entry key="project.closed" value="1" />
+          <entry key="project.open.time.6" value="1" />
+          <entry key="project.opened" value="1" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.extensions.open">
+        <counts>
+          <entry key="png" value="3" />
+          <entry key="py" value="5" />
+          <entry key="txt" value="1" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.types.open">
+        <counts>
+          <entry key="Image" value="3" />
+          <entry key="PLAIN_TEXT" value="1" />
+          <entry key="Python" value="5" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.extensions.edit">
+        <counts>
+          <entry key="py" value="74" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.types.edit">
+        <counts>
+          <entry key="Python" value="74" />
+        </counts>
+      </usages-collector>
+    </session>
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/bin/train.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1500">
+              <caret line="100" column="37" selection-start-line="100" selection-start-column="37" selection-end-line="100" selection-end-column="37" />
+              <folding>
+                <element signature="e#0#10#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/bin/generate.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="177">
+              <caret line="56" lean-forward="true" selection-start-line="56" selection-end-line="56" />
+              <folding>
+                <element signature="e#0#10#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/snapshots/114/transformer_e2e_noise.png">
+          <provider selected="true" editor-type-id="images" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/snapshots/115/transformer_e2e_noise_google_method.png">
+          <provider selected="true" editor-type-id="images" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/bin/evaluate.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="840">
+              <caret line="68" column="50" selection-start-line="68" selection-start-column="50" selection-end-line="68" selection-end-column="50" />
+              <folding>
+                <element signature="e#0#10#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/snapshots/112/transformer_e2e_word.txt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-6315">
+              <caret line="11" column="12" selection-start-line="11" selection-start-column="12" selection-end-line="11" selection-end-column="12" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/models/transformer.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-6542">
+              <caret line="27" column="20" selection-start-line="27" selection-start-column="20" selection-end-line="27" selection-end-column="20" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/preprocessing/word_dropper.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="595">
+              <caret line="58" selection-start-line="58" selection-end-line="58" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/utils/ljqpy.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="2290">
+              <caret line="292" column="15" selection-start-line="292" selection-start-column="15" selection-end-line="292" selection-end-column="15" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/utils/helper.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="150">
+              <caret line="11" column="31" lean-forward="true" selection-start-line="11" selection-start-column="31" selection-end-line="11" selection-end-column="31" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>Decoder</find>
+      <find>dilation</find>
+      <find>spli</find>
+      <find>(?:(\[(?&gt;[^\[\]]+)*\])|\S)+</find>
+      <find>h5py</find>
+      <find>pos</find>
+      <find>Crown Plaza Hotel</find>
+      <find>,</find>
+      <find>split</find>
+      <find>.</find>
+      <find>,\n</find>
+      <find />
+      <find>config</find>
+      <find>sys.stderr,</find>
+      <find>&quot;Giraffe is a coffee shop providing take a service the high price range . It is located near The Bakers .</find>
+      <find>Burger Kin</find>
+      <find>exponen</find>
+      <find>30</find>
+    </findStrings>
+    <replaceStrings>
+      <replace>,</replace>
+      <replace>.</replace>
+      <replace />
+      <replace>configs</replace>
+    </replaceStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/README.md" />
+        <option value="$PROJECT_DIR$/transformer.py" />
+        <option value="$PROJECT_DIR$/rnn_s2s.py" />
+        <option value="$PROJECT_DIR$/dataloader.py" />
+        <option value="$PROJECT_DIR$/ljqpy.py" />
+        <option value="$PROJECT_DIR$/en2de_main.py" />
+        <option value="$PROJECT_DIR$/train.py" />
+        <option value="$PROJECT_DIR$/data/e2e/e2e.s2s.txt" />
+        <option value="$PROJECT_DIR$/preprocessing/prepare_wmt.py" />
+        <option value="$PROJECT_DIR$/preprocessing/drop_words.py" />
+        <option value="$PROJECT_DIR$/preprocessing/splitter.py" />
+        <option value="$PROJECT_DIR$/preprocessing/dataloader.py" />
+        <option value="$PROJECT_DIR$/models/rnn_s2s.py" />
+        <option value="$PROJECT_DIR$/utils/helper.py" />
+        <option value="$PROJECT_DIR$/data/e2e/devset.txt" />
+        <option value="$PROJECT_DIR$/utils/prepare_evaluation.py" />
+        <option value="$PROJECT_DIR$/utils/evaluation/e2e-metrics/pycocoevalcap/eval.py" />
+        <option value="$PROJECT_DIR$/utils/evaluation/e2e-metrics/pycocoevalcap/meteor/meteor.py" />
+        <option value="$PROJECT_DIR$/utils/evaluation/__init__.py" />
+        <option value="$PROJECT_DIR$/utils/evaluation/e2e-metrics/__init__.py" />
+        <option value="$PROJECT_DIR$/utils/evaluation/e2e-metrics/measure_scores.py" />
+        <option value="$PROJECT_DIR$/snapshots/113/transformer_e2e.metric_baseline.txt" />
+        <option value="$PROJECT_DIR$/data/e2e/devset.metric_golden.txt" />
+        <option value="$PROJECT_DIR$/utils/evaluation/e2emetrics/measure_scores.py" />
+        <option value="$PROJECT_DIR$/data/e2e/trainset.txt" />
+        <option value="$PROJECT_DIR$/preprocessing/word_dropper.py" />
+        <option value="$PROJECT_DIR$/bin/evaluate.py" />
+        <option value="$PROJECT_DIR$/bin/train.py" />
+        <option value="$PROJECT_DIR$/models/transformer.py" />
+        <option value="$PROJECT_DIR$/bin/generate.py" />
+      </list>
+    </option>
+  </component>
+  <component name="JsBuildToolGruntFileManager" detection-done="true" sorting="DEFINITION_ORDER" />
+  <component name="JsBuildToolPackageJson" detection-done="true" sorting="DEFINITION_ORDER" />
+  <component name="JsGulpfileManager">
+    <detection-done>true</detection-done>
+    <sorting>DEFINITION_ORDER</sorting>
+  </component>
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="67" />
+    <option name="y" value="27" />
+    <option name="width" value="1586" />
+    <option name="height" value="789" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="Scope" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="attention-is-all-you-need-keras" type="b2602c69:ProjectViewProjectNode" />
+              <item name="attention-is-all-you-need-keras" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="attention-is-all-you-need-keras" type="b2602c69:ProjectViewProjectNode" />
+              <item name="attention-is-all-you-need-keras" type="462c0819:PsiDirectoryNode" />
+              <item name="bin" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="attention-is-all-you-need-keras" type="b2602c69:ProjectViewProjectNode" />
+              <item name="attention-is-all-you-need-keras" type="462c0819:PsiDirectoryNode" />
+              <item name="data" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="attention-is-all-you-need-keras" type="b2602c69:ProjectViewProjectNode" />
+              <item name="attention-is-all-you-need-keras" type="462c0819:PsiDirectoryNode" />
+              <item name="models" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="attention-is-all-you-need-keras" type="b2602c69:ProjectViewProjectNode" />
+              <item name="attention-is-all-you-need-keras" type="462c0819:PsiDirectoryNode" />
+              <item name="preprocessing" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="attention-is-all-you-need-keras" type="b2602c69:ProjectViewProjectNode" />
+              <item name="attention-is-all-you-need-keras" type="462c0819:PsiDirectoryNode" />
+              <item name="results" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="attention-is-all-you-need-keras" type="b2602c69:ProjectViewProjectNode" />
+              <item name="attention-is-all-you-need-keras" type="462c0819:PsiDirectoryNode" />
+              <item name="results" type="462c0819:PsiDirectoryNode" />
+              <item name="112" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="attention-is-all-you-need-keras" type="b2602c69:ProjectViewProjectNode" />
+              <item name="attention-is-all-you-need-keras" type="462c0819:PsiDirectoryNode" />
+              <item name="results" type="462c0819:PsiDirectoryNode" />
+              <item name="113_best" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="attention-is-all-you-need-keras" type="b2602c69:ProjectViewProjectNode" />
+              <item name="attention-is-all-you-need-keras" type="462c0819:PsiDirectoryNode" />
+              <item name="results" type="462c0819:PsiDirectoryNode" />
+              <item name="114" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="attention-is-all-you-need-keras" type="b2602c69:ProjectViewProjectNode" />
+              <item name="attention-is-all-you-need-keras" type="462c0819:PsiDirectoryNode" />
+              <item name="results" type="462c0819:PsiDirectoryNode" />
+              <item name="115" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="attention-is-all-you-need-keras" type="b2602c69:ProjectViewProjectNode" />
+              <item name="attention-is-all-you-need-keras" type="462c0819:PsiDirectoryNode" />
+              <item name="results" type="462c0819:PsiDirectoryNode" />
+              <item name="116" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="attention-is-all-you-need-keras" type="b2602c69:ProjectViewProjectNode" />
+              <item name="attention-is-all-you-need-keras" type="462c0819:PsiDirectoryNode" />
+              <item name="snapshots" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="attention-is-all-you-need-keras" type="b2602c69:ProjectViewProjectNode" />
+              <item name="attention-is-all-you-need-keras" type="462c0819:PsiDirectoryNode" />
+              <item name="snapshots" type="462c0819:PsiDirectoryNode" />
+              <item name="112" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="attention-is-all-you-need-keras" type="b2602c69:ProjectViewProjectNode" />
+              <item name="attention-is-all-you-need-keras" type="462c0819:PsiDirectoryNode" />
+              <item name="snapshots" type="462c0819:PsiDirectoryNode" />
+              <item name="114" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="attention-is-all-you-need-keras" type="b2602c69:ProjectViewProjectNode" />
+              <item name="attention-is-all-you-need-keras" type="462c0819:PsiDirectoryNode" />
+              <item name="snapshots" type="462c0819:PsiDirectoryNode" />
+              <item name="115" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="attention-is-all-you-need-keras" type="b2602c69:ProjectViewProjectNode" />
+              <item name="attention-is-all-you-need-keras" type="462c0819:PsiDirectoryNode" />
+              <item name="snapshots" type="462c0819:PsiDirectoryNode" />
+              <item name="116" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="attention-is-all-you-need-keras" type="b2602c69:ProjectViewProjectNode" />
+              <item name="attention-is-all-you-need-keras" type="462c0819:PsiDirectoryNode" />
+              <item name="utils" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="attention-is-all-you-need-keras" type="b2602c69:ProjectViewProjectNode" />
+              <item name="attention-is-all-you-need-keras" type="462c0819:PsiDirectoryNode" />
+              <item name="utils" type="462c0819:PsiDirectoryNode" />
+              <item name="evaluation" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../THESIS/EXPERIMENTAL/transformer_keras/attention-is-all-you-need-keras" />
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PythonContentEntriesConfigurable" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/data/e2e" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/data/wmt" />
+      <recent name="$PROJECT_DIR$/bin" />
+      <recent name="$PROJECT_DIR$/preprocessing" />
+      <recent name="$PROJECT_DIR$/utils" />
+      <recent name="$PROJECT_DIR$/models" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager" selected="Python.generate">
+    <configuration name="evaluate" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="attention-is-all-you-need-keras" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/bin" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/bin/evaluate.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="generate" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="attention-is-all-you-need-keras" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/bin" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/bin/generate.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="measure_scores" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="attention-is-all-you-need-keras" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/utils/evaluation/e2e-metrics" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/utils/evaluation/e2e-metrics/measure_scores.py" />
+      <option name="PARAMETERS" value="example-inputs/devel-conc.txt example-inputs/baseline-output.txt" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="train" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="attention-is-all-you-need-keras" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/bin" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/bin/train.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="word_dropper" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="attention-is-all-you-need-keras" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/preprocessing" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/preprocessing/word_dropper.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Python.measure_scores" />
+      <item itemvalue="Python.evaluate" />
+      <item itemvalue="Python.word_dropper" />
+      <item itemvalue="Python.train" />
+      <item itemvalue="Python.generate" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.generate" />
+        <item itemvalue="Python.train" />
+        <item itemvalue="Python.evaluate" />
+        <item itemvalue="Python.word_dropper" />
+        <item itemvalue="Python.measure_scores" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="20122486-83ec-453c-a68f-cf0857abee73" name="Default" comment="" />
+      <created>1532112773044</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1532112773044</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="67" y="25" width="1853" height="1055" extended-state="6" />
+    <layout>
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.25290537" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.32756758" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.2867725" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Docker" order="7" />
+      <window_info anchor="bottom" id="Database Changes" order="8" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Terminal" order="9" />
+      <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
+      <window_info anchor="bottom" id="Version Control" order="11" />
+      <window_info anchor="bottom" id="Python Console" order="12" weight="0.32842416" />
+      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="SciView" order="3" />
+      <window_info anchor="right" id="Database" order="4" />
+    </layout>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/preprocessing/word_dropper.py</url>
+          <line>52</line>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/preprocessing/word_dropper.py</url>
+          <line>48</line>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/bin/generate.py</url>
+          <line>55</line>
+          <option name="timeStamp" value="7" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/utils/evaluation/e2emetrics/pycocoevalcap/meteor/meteor.py</url>
+          <line>41</line>
+          <option name="timeStamp" value="9" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/utils/evaluation/e2emetrics/pycocoevalcap/meteor/meteor.py</url>
+          <line>52</line>
+          <option name="timeStamp" value="10" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/utils/evaluation/e2emetrics/pycocoevalcap/meteor/meteor.py</url>
+          <line>55</line>
+          <option name="timeStamp" value="11" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/utils/evaluation/e2emetrics/pycocoevalcap/meteor/meteor.py</url>
+          <line>51</line>
+          <option name="timeStamp" value="12" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/utils/evaluation/e2emetrics/pycocoevalcap/meteor/meteor.py</url>
+          <line>40</line>
+          <option name="timeStamp" value="13" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/utils/evaluation/e2emetrics/pycocoevalcap/meteor/meteor.py</url>
+          <line>66</line>
+          <option name="timeStamp" value="14" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/utils/evaluation/e2emetrics/pycocoevalcap/meteor/meteor.py</url>
+          <line>67</line>
+          <option name="timeStamp" value="15" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/data/wmt/raw.trainset.txt">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file:///usr/local/lib/python3.6/dist-packages/numpy/core/numeric.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="141">
+          <caret line="410" selection-start-line="410" selection-end-line="410" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/data/wmt/devset_noise.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="30">
+          <caret line="2" selection-start-line="2" selection-end-line="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/lib/python3.6/dist-packages/keras/engine/topology.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="36015">
+          <caret line="2421" selection-start-line="2421" selection-end-line="2421" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bin/model_plot.png" />
+    <entry file="file://$PROJECT_DIR$/data/wmt/trainset_noise.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15">
+          <caret line="130" selection-start-line="130" selection-end-line="130" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/models/rnn_s2s.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="261">
+          <caret line="90" column="40" selection-start-line="90" selection-start-column="40" selection-end-line="90" selection-end-column="40" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/lib/python3.6/dist-packages/keras/callbacks.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="14820">
+          <caret line="1006" column="8" selection-start-line="1006" selection-start-column="8" selection-end-line="1006" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/lib/python3.6/dist-packages/keras/optimizers.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="6105">
+          <caret line="418" column="17" selection-start-line="418" selection-start-column="17" selection-end-line="418" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/lib/python3.6/dist-packages/keras/engine/training.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-9">
+          <caret line="548" column="8" selection-start-line="548" selection-start-column="8" selection-end-line="548" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/lib/python3.6/dist-packages/keras/utils/generic_utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="97">
+          <caret line="126" selection-start-line="126" selection-end-line="126" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/snapshots/113/transformer_e2e.properties" />
+    <entry file="file://$PROJECT_DIR$/results/112/transformer_e2e.png" />
+    <entry file="file://$PROJECT_DIR$/preprocessing/dataloader.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15">
+          <caret line="91" column="7" selection-start-line="91" selection-start-column="7" selection-end-line="91" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/data/e2e/devset_noise.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="465">
+          <caret line="31" column="35" selection-start-line="31" selection-start-column="35" selection-end-line="31" selection-end-column="35" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/data/e2e/devset.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="285">
+          <caret line="19" column="51" selection-start-line="19" selection-start-column="51" selection-end-line="19" selection-end-column="51" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/evaluation/e2emetrics/pycocoevalcap/eval.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="371">
+          <caret line="41" column="30" selection-start-line="41" selection-start-column="30" selection-end-line="41" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/lib/python3.6/subprocess.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="214">
+          <caret line="1343" selection-start-line="1343" selection-end-line="1343" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/evaluation/e2emetrics/pycocoevalcap/meteor/meteor.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-80">
+          <caret line="36" lean-forward="true" selection-start-line="36" selection-end-line="36" />
+          <folding>
+            <element signature="e#154#163#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/evaluation/e2emetrics/example-inputs/README.md">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/dummy.txt" />
+    <entry file="file://$PROJECT_DIR$/utils/evaluation/e2e-metrics/__init__.py" />
+    <entry file="file://$PROJECT_DIR$/utils/evaluation/__init__.py" />
+    <entry file="file://$PROJECT_DIR$/utils/evaluation/e2emetrics/measure_scores.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="4710">
+          <caret line="325" column="39" selection-start-line="325" selection-start-column="27" selection-end-line="325" selection-end-column="39" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/data/e2e/trainset_noise.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-3600" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/data/e2e/trainset.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="167">
+          <caret line="32408" column="108" selection-start-line="32408" selection-start-column="108" selection-end-line="32408" selection-end-column="108" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/results/114/transformer_e2e_noise.metrics" />
+    <entry file="file://$PROJECT_DIR$/results/114/transformer_e2e_noise.metric_eval" />
+    <entry file="file://$PROJECT_DIR$/results/114/transformer_e2e_noise.log">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/results/113_best/transformer_e2e.metric_eval" />
+    <entry file="file://$PROJECT_DIR$/data/e2e/trainset_noise_google_method.txt">
+      <provider selected="true" editor-type-id="LargeFileEditor">
+        <state relative-caret-position="-12375" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/results/113_best/transformer_e2e_beamsrch_devset.metric_eval">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/results/112/transformer_e2e.log">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="270">
+          <caret line="18" column="61" selection-start-line="18" selection-start-column="61" selection-end-line="18" selection-end-column="61" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/snapshots/113_best/transformer_e2e.args">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="50" selection-start-column="50" selection-end-column="50" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/snapshots/113_best/transformer_e2e.configs">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/data/e2e/devset.metric_golden.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1305">
+          <caret line="87" column="83" selection-start-line="87" selection-start-column="73" selection-end-line="87" selection-end-column="83" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/snapshots/113_best/transformer_e2e.metric_baseline.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="8205">
+          <caret line="547" selection-start-line="547" selection-end-line="547" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/results/113_best/transformer_e2e.log">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="375">
+          <caret line="25" column="29" selection-start-line="25" selection-start-column="29" selection-end-line="25" selection-end-column="29" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/prepare_evaluation.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="375">
+          <caret line="25" column="22" selection-start-line="25" selection-start-column="22" selection-end-line="25" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/lib/python3.6/dist-packages/keras/layers/convolutional.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="234">
+          <caret line="307" column="24" selection-start-line="307" selection-start-column="17" selection-end-line="307" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/preprocessing/word_dropper.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="595">
+          <caret line="58" selection-start-line="58" selection-end-line="58" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/snapshots/118/transformer_e2e.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/models/transformer.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-6542">
+          <caret line="27" column="20" selection-start-line="27" selection-start-column="20" selection-end-line="27" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/ljqpy.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2290">
+          <caret line="292" column="15" selection-start-line="292" selection-start-column="15" selection-end-line="292" selection-end-column="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/helper.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="150">
+          <caret line="11" column="31" lean-forward="true" selection-start-line="11" selection-start-column="31" selection-end-line="11" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/snapshots/112/transformer_e2e_word.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-6315">
+          <caret line="11" column="12" selection-start-line="11" selection-start-column="12" selection-end-line="11" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bin/train.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1500">
+          <caret line="100" column="37" selection-start-line="100" selection-start-column="37" selection-end-line="100" selection-end-column="37" />
+          <folding>
+            <element signature="e#0#10#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bin/evaluate.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="840">
+          <caret line="68" column="50" selection-start-line="68" selection-start-column="50" selection-end-line="68" selection-end-column="50" />
+          <folding>
+            <element signature="e#0#10#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bin/generate.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="177">
+          <caret line="56" lean-forward="true" selection-start-line="56" selection-end-line="56" />
+          <folding>
+            <element signature="e#0#10#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/snapshots/114/transformer_e2e_noise.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/snapshots/115/transformer_e2e_noise_google_method.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+  </component>
+</project>
