@@ -1,7 +1,7 @@
 import os
 import numpy as np
 
-from ..utils import ljqpy
+from ..utils import helper
 
 
 class TokenList:
@@ -20,58 +20,24 @@ class TokenList:
     def endid(self):    return 3
 
 
-def pad_to_longest(xs, tokens, max_len=999):
-    longest = min(len(max(xs, key=len)) + 2, max_len)
-    X = np.zeros((len(xs), longest), dtype='int32')
-    X[:, 0] = tokens.startid()
-    for i, x in enumerate(xs):
-        x = x[:max_len - 2]
-        for j, z in enumerate(x):
-            X[i, 1 + j] = tokens.id(z)
-        X[i, 1 + len(x)] = tokens.endid()
-    return X
-
-
-def parenthesis_split(sentence, delimiter=" ", lparen="[", rparen="]"):
-    nb_brackets=0
-    sentence = sentence.strip(delimiter) # get rid of leading/trailing seps
-
-    l=[0]
-    for i,c in enumerate(sentence):
-        if c==lparen:
-            nb_brackets+=1
-        elif c==rparen:
-            nb_brackets-=1
-        elif c==delimiter and nb_brackets==0:
-            l.append(i)
-        # handle malformed string
-        if nb_brackets<0:
-            raise Exception("Syntax error")
-
-    l.append(len(sentence))
-    # handle missing closing parentheses
-    if nb_brackets>0:
-        raise Exception("Syntax error")
-    return([sentence[i:j].strip(delimiter) for i,j in zip(l,l[1:])])
-
 
 def MakeS2SDict(fn=None, min_freq=5, delimiter=' ',lparen="[", rparen="]", dict_file=None):
     if dict_file is not None and os.path.exists(dict_file):
         print('loading', dict_file)
-        lst = ljqpy.LoadList(dict_file)
+        lst = helper.load_list(dict_file)
         midpos = lst.index('<@@@>')
         itokens = TokenList(lst[:midpos])
         otokens = TokenList(lst[midpos + 1:])
         return itokens, otokens
-    data = ljqpy.LoadCSV(fn)
+    data = helper.load_csv(fn)
     wdicts = [{}, {}]
     for ss in data:
         for seq, wd in zip(ss, wdicts):
-            for w in parenthesis_split(seq, delimiter, lparen, rparen):
+            for w in helper.parenthesis_split(seq, delimiter, lparen, rparen):
                 wd[w] = wd.get(w, 0) + 1
     wlists = []
     for wd in wdicts:
-        wd = ljqpy.FreqDict2List(wd)
+        wd = helper.freq_dict_2_list(wd)
         wlist = [x for x, y in wd if y >= min_freq]
         wlists.append(wlist)
     print('seq 1 words:', len(wlists[0]))
@@ -79,7 +45,7 @@ def MakeS2SDict(fn=None, min_freq=5, delimiter=' ',lparen="[", rparen="]", dict_
     itokens = TokenList(wlists[0])
     otokens = TokenList(wlists[1])
     if dict_file is not None:
-        ljqpy.SaveList(wlists[0] + ['<@@@>'] + wlists[1], dict_file)
+        helper.store_list(wlists[0] + ['<@@@>'] + wlists[1], dict_file)
     return itokens, otokens
 
 
@@ -91,12 +57,12 @@ def MakeS2SData(fn=None, itokens=None, otokens=None, delimiter=' ', lparen="[", 
         with h5py.File(h5_file) as dfile:
             X, Y = dfile['X'][:], dfile['Y'][:]
         return X, Y
-    data = ljqpy.LoadCSVg(fn)
+    data = helper.load_csv_g(fn)
     Xs = [[], []]
     for ss in data:
         for seq, xs in zip(ss, Xs):
-            xs.append(list(parenthesis_split(seq, delimiter, lparen, rparen)))
-    X, Y = pad_to_longest(Xs[0], itokens, max_len), pad_to_longest(Xs[1], otokens, max_len)
+            xs.append(list(helper.parenthesis_split(seq, delimiter, lparen, rparen)))
+    X, Y = helper.pad_to_longest(Xs[0], itokens, max_len), helper.pad_to_longest(Xs[1], otokens, max_len)
     if h5_file is not None:
         with h5py.File(h5_file, 'w') as dfile:
             dfile.create_dataset('X', data=X)
@@ -107,11 +73,11 @@ def MakeS2SData(fn=None, itokens=None, otokens=None, delimiter=' ', lparen="[", 
 def S2SDataGenerator(fn, itokens, otokens, batch_size=64, delimiter=' ', lparen="[", rparen="]", max_len=999):
     Xs = [[], []]
     while True:
-        for ss in ljqpy.LoadCSVg(fn):
+        for ss in helper.load_csv_g(fn):
             for seq, xs in zip(ss, Xs):
-                xs.append(list(parenthesis_split(seq, delimiter, lparen, rparen)))
+                xs.append(list(helper.parenthesis_split(seq, delimiter, lparen, rparen)))
             if len(Xs[0]) >= batch_size:
-                X, Y = pad_to_longest(Xs[0], itokens, max_len), pad_to_longest(Xs[1], otokens, max_len)
+                X, Y = helper.pad_to_longest(Xs[0], itokens, max_len), helper.pad_to_longest(Xs[1], otokens, max_len)
                 yield [X, Y], None
                 Xs = [[], []]
 

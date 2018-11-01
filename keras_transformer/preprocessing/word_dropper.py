@@ -1,7 +1,7 @@
 from random import shuffle
 from itertools import compress
 
-from ..preprocessing.dataloader import parenthesis_split
+from ..utils.helper import parenthesis_split
 
 import numpy as np
 

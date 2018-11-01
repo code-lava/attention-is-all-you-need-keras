@@ -1,333 +1,161 @@
-"""
-Copyright 2017-2018 Fizyr (https://fizyr.com)
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
-@contribution : Fares Abawi (6abawi@informatik.uni-hamburg.de)
-
-"""
-
+import sys
 import argparse
 import os
-import random
-import string
-from pprint import pprint
 
-import numpy as np
-import keras
-import keras.backend as K
-import keras.preprocessing.image
+from keras.optimizers import *
+from keras.losses import sparse_categorical_crossentropy
+from keras.callbacks import *
 from keras.utils.vis_utils import plot_model
 
-import keras_retinanet.losses
-import keras_retinanet.models as models
-from keras_retinanet.models.resnet import ResNet50RetinaNet, ResNet101RetinaNet, ResNet152RetinaNet
-from keras_fusionnet.preprocessing.fusion_generator import NicoGraspingGeneratorV0_0,\
-    NicoGraspingGeneratorV0_1, NicoGraspingGeneratorV1_0, NicoGraspingGeneratorV1_1
-from keras_retinanet.utils.keras_version import check_keras_version
-from keras_fusionnet.models.fusionnet import FusionNet
+# Allow relative imports when being executed as script.
+if __name__ == "__main__" and __package__ is None:
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+    import keras_retinanet.bin  # noqa: F401
+    __package__ = "keras_transformer.bin"
 
-import tensorflow as tf
+from ..models.transformer import transformer
+from ..utils import helper
+from ..preprocessing import dataloader as dd
+from .. import losses
 
+def parse_args(args):
+    """ Parse the arguments.
+    """
 
-class LossHistory(keras.callbacks.Callback):
-    def on_train_begin(self, logs={}):
-        self.val_losses = []
-        self.train_losses = []
-        self.epochs = 0
-        self.best_epoch = 0
-        self.best_val_loss = float("inf")
-        self.best_train_loss = float("inf")
+    parser = argparse.ArgumentParser(description='Simple training script for a Transformer network.')
 
-    def on_epoch_end(self, batch, logs={}):
-        self.train_losses.append(logs.get('loss'))
-        self.val_losses.append(logs.get('val_loss'))
-        self.epochs += 1
-        if self.val_losses[-1] < self.best_val_loss:
-            self.best_val_loss = self.val_losses[-1]
-            self.best_train_loss = self.train_losses[-1]
-            self.best_epoch = self.epochs
+    parser.add_argument('--dataset-name',
+                        help='Name of the datset to use.',
+                        default='e2e')
+    parser.add_argument('--train-file',
+                        help='Path to training source and target sequences file (both separated by a tab).',
+                        default='/home/abawi/PycharmProjects/THESIS/NEW/datasets/GeneratedData/TransformerMultimodalCSV/virtual/Annotations/annotations.csv')
+    parser.add_argument('--valid-file',
+                        help='Path to validation source and target sequences file (both separated by a tab).',
+                        default='/home/abawi/PycharmProjects/THESIS/NEW/datasets/GeneratedData/TransformerMultimodalCSV/virtual/Annotations/annotations.csv')
+    parser.add_argument('--id',
+                        help='The unique identifier for the current run.',
+                        default=118)
+    parser.add_argument('--snapshot-dir',
+                        help='The snapshot directory.',
+                        default='../../snapshots')
+    parser.add_argument('--logging-dir',
+                        help='The logging directory.',
+                        default='../../results')
 
-def store_configuration(args, params, model_summary):
-    file = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                        '..', 'logs', str(args.identifier) + '_details.config')
-    with open(file, 'wt') as out:
-        pprint(vars(args), stream=out)
-        pprint(params, stream=out)
-        # pprint(model_summary, stream=out)
+    parser.add_argument('--model', help='The model to run [transformer, s2srnn].', default='transformer')
+    parser.add_argument('--batch-size', help='The size of a single batch.', default=64)
+    parser.add_argument('--epochs', help='Number of epochs.', default=30)
 
-def get_session():
-    config = tf.ConfigProto()
-    config.gpu_options.allow_growth = True
-    return tf.Session(config=config)
+    # TODO: Add arguments to alter transformer and s2s configs (not important at the moment)
 
+    return parser.parse_args(args)
 
-def create_model(weights='imagenet', model_type=None, resnet_type=None,
-                 retinanet_model_path=None, retinanet_freeze_weights=False,
-                 fusionnet_layers=None):
-    fusionnet = FusionNet()
-    retinanet_image_input = keras.layers.Input((60, 80, 3), name='retinanet_image_input')
-    fusionnet_image_input = keras.layers.Input((60, 80, 3), name='fusionnet_image_input')
-    fusionnet_category_input = keras.layers.Input((20,), name='fusionnet_object_description_input')
-
-
-    if retinanet_model_path is not None:
-        retinanet = models.load_model(retinanet_model_path)
-        retinanet.trainable = retinanet_freeze_weights
-    else:
-        # TODO (fabawi) : num_class should be dynamic since adding new label types would break the network
-        if resnet_type == 'resnet_50_retinanet':
-            resnet = ResNet50RetinaNet
-        elif resnet_type == 'resnet_101_retinanet':
-            resnet = ResNet101RetinaNet
-        elif resnet_type == 'resnet_152_retinanet':
-            resnet = ResNet152RetinaNet
-        else:
-            resnet = ResNet50RetinaNet
-
-        retinanet = resnet(retinanet_image_input, num_classes=19, weights=weights)
-
-    if model_type == 'fusionnetV0_0':
-        return fusionnet.fusionnet_v0_0(fusionnet_image_input, retinanet, fusionnet_layers)
-    elif model_type == 'fusionnetV0_1':
-        return fusionnet.fusionnet_v0_1(fusionnet_image_input, fusionnet_layers)
-    elif model_type == 'fusionnetV1_0':
-        return fusionnet.fusionnet_v1_0(fusionnet_image_input, fusionnet_category_input, retinanet, fusionnet_layers)
-    elif model_type == 'fusionnetV1_1':
-        return fusionnet.fusionnet_v1_1(fusionnet_image_input, fusionnet_category_input, fusionnet_layers)
-    else:
-        return fusionnet.fusionnet_v0_0(fusionnet_image_input, retinanet, fusionnet_layers)
+def main(args=None, configs=None):
+    # parse arguments
+    if args is None:
+        args = sys.argv[1:]
+    args = parse_args(args)
 
 
-def train(args, params=None):
-    if params is not None:
-        opt_lr_val = params['opt_lr_val']
-        opt_reducelr_plateau = params['opt_reducelr_plateau']
-        opt_resnet_type_val = params['opt_resnet_type_val']
-        opt_fusionnet_layers_val = params['opt_fusionnet_layers_val']
-    else:
-        params = dict()
-        opt_lr_val = params['opt_lr_val'] = 0.01
-        opt_reducelr_plateau  = params['opt_reducelr_plateau'] = False
-        opt_resnet_type_val = params['opt_resnet_type_val'] = ''
-        opt_fusionnet_layers_val = params['opt_fusionnet_layers_val'] = None
+    # dataset_name = args.train_file.split(os.sep)[-2]
+    snapshot_path = helper.make_dir(os.path.join(args.snapshot_dir, str(args.id))) + os.sep + args.model + '_' + args.dataset_name
+    result_path = helper.make_dir(os.path.join(args.logging_dir, str(args.id))) + os.sep + args.model + '_' + args.dataset_name
+    mfile = snapshot_path + '.model.h5'
 
-    # generate random identifier
-    if args.identifier is not None:
-        identifier = args.identifier
-    else:
-        identifier = args.identifier = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
+    # store the args and configs
+    helper.store_settings(store_object=args, json_file=snapshot_path + '.args')
+    helper.store_settings(store_object=configs, json_file=snapshot_path + '.configs')
 
-    # make sure keras is the minimum required version
-    check_keras_version()
+    itokens, otokens = dd.MakeS2SDict(args.train_file, dict_file=snapshot_path + '_word.txt')
+    Xtrain, Ytrain = dd.MakeS2SData(args.train_file, itokens, otokens, h5_file=snapshot_path + '.train.h5')
+    Xvalid, Yvalid = dd.MakeS2SData(args.valid_file, itokens, otokens, h5_file=snapshot_path + '.valid.h5')
 
-    # optionally choose specific GPU
-    if args.gpu:
-        os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
-    keras.backend.tensorflow_backend.set_session(get_session())
+    print('seq 1 words:', itokens.num())
+    print('seq 2 words:', otokens.num())
+    print('train shapes:', Xtrain.shape, Ytrain.shape)
+    print('valid shapes:', Xvalid.shape, Yvalid.shape)
 
-    # create the model
-    print('Creating model, this may take a second...')
-    if args.pretrained_retinanet:
-        model = create_model(weights=args.weights,
-                             model_type=args.fusionnet_model_type, resnet_type=opt_resnet_type_val,
-                             retinanet_model_path=args.pretrained_retinanet_model_path,
-                             retinanet_freeze_weights=args.freeze_retinanet_weights,
-                             fusionnet_layers=opt_fusionnet_layers_val)
-    else:
-        model = create_model(weights=args.weights,
-                             model_type=args.fusionnet_model_type, resnet_type=opt_resnet_type_val,
-                             fusionnet_layers=opt_fusionnet_layers_val)
-
-    # compile model (note: set loss to None since loss is added inside layer)
-    model.compile(
-        loss={
-            'fusionnet_output': keras.losses.mean_squared_error  # keras_retinanet.losses.focal()
-        },
-        # optimizer=keras.optimizers.adam(lr=1e-5, clipnorm=0.001)
-        optimizer=keras.optimizers.SGD(lr=opt_lr_val, momentum=0.9, nesterov=True)  # decay=1e-6, lr= 0.01
-    )
-
-    # create image data generator objects
-    train_image_data_generator = keras.preprocessing.image.ImageDataGenerator(
-        horizontal_flip=False,
-    )
-    val_image_data_generator = keras.preprocessing.image.ImageDataGenerator()
-
-    # check for the model type
-    if args.fusionnet_model_type == 'fusionnetV0_0':
-        grasp_generator_class = NicoGraspingGeneratorV0_0
-    elif args.fusionnet_model_type == 'fusionnetV0_1':
-        grasp_generator_class = NicoGraspingGeneratorV0_1
-    elif args.fusionnet_model_type == 'fusionnetV1_0':
-        grasp_generator_class = NicoGraspingGeneratorV1_0
-    elif args.fusionnet_model_type == 'fusionnetV1_1':
-        grasp_generator_class = NicoGraspingGeneratorV1_1
-    else:
-        grasp_generator_class = NicoGraspingGeneratorV0_0
-
-    # create a generator for training data
-    train_generator = grasp_generator_class(
-        args.grasp_path,
-        'train',
-        train_image_data_generator,
-        image_dir=args.image_dir,
-        generate_sets=args.generate_train_val_test,
-        train_val_test_proportions=args.train_val_test_proportions,
-        batch_size=args.batch_size,
-        normalize=True
-    )
-
-    # create a generator for testing data
-    val_generator = grasp_generator_class(
-        args.grasp_path,
-        'val',
-        val_image_data_generator,
-        image_dir=args.image_dir,
-        generate_sets=False,
-        generate_categories=False,
-        batch_size=args.batch_size
-    )
-
-    # print model summary
-    model_summary = model.summary()
-    print(model_summary)
-
-    # save model structure to file
-    plot_model(model,
-               to_file=os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                    '..', 'images', train_generator.get_name() + '_model_plot.png'),
-               show_shapes=True, show_layer_names=True)
-
-    # start training
-    loss_history = LossHistory()
-
-    callbacks = [
-        # identifier is ignored for checkpoints
-        keras.callbacks.ModelCheckpoint(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                                     '..', 'snapshots', train_generator.get_name() + '_' +
-                                                     args.image_dir + '_' + str(args.epochs) + '_' +
-                                                     str(args.batch_size) + '_' + str(args.pretrained_retinanet) +
-                                                     '_' + str(args.freeze_retinanet_weights) +
-                                                     '_nico_grasping_best.h5'),
-                                        monitor='val_loss', verbose=2, save_best_only=True),
-
-        keras.callbacks.CSVLogger(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                               '..', 'logs', train_generator.get_name() + '_' +
-                                               args.image_dir + '_' + str(args.epochs) + '_' +
-                                               str(args.batch_size) + '_' + str(args.pretrained_retinanet) +
-                                               '_' + str(args.freeze_retinanet_weights) +
-                                               '_' + str(identifier) + '_nico_grasping_log.csv'),
-                                  append=False),
-
-        loss_history,
-
-    ]
-
-    if opt_reducelr_plateau:
-        callbacks.append(keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=10, verbose=1,
-                                                           mode='auto', epsilon=0.0001, cooldown=0, min_lr=0))
-
-    hist = model.fit_generator(
-        generator=train_generator,
-        steps_per_epoch=len(train_generator.image_names) // args.batch_size,
-        epochs=args.epochs,
-        verbose=1,
-        validation_data=val_generator,
-        validation_steps=len(val_generator.image_names) // args.batch_size,  # 3000
-        callbacks=callbacks,
-    )
-
-    # print(hist.history)
-
-    # store final result too
-    model.save(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                            '..', 'snapshots', train_generator.get_name() + '_' +
-                            args.image_dir + '_' + str(args.epochs) + '_' +
-                            str(args.batch_size) + str(args.pretrained_retinanet) +
-                            '_' + str(args.freeze_retinanet_weights) + '_nico_grasping_final.h5'))
-
-    # store configuration file for storing all details
-    store_configuration(args, params, model_summary)
+    if args.model == 's2srnn':
+        from ..models.rnn_s2s import RNNSeq2Seq
+        s2s = RNNSeq2Seq(itokens,otokens,**configs['s2srnn']['init'])
+        s2s.compile(deserialize(configs['s2srnn']['optimizer']))
+    elif args.model == 'transformer':
+        from ..models.transformer import Transformer, LRSchedulerPerStep
+        s2s = Transformer(itokens, otokens,**configs['transformer']['init'])
+        prediction_model, training_model = transformer(inputs=None, transformer_structure=s2s)
+        # below is the baseline transformer
+        # s2s = Transformer(itokens, otokens, len_limit=70, d_model=d_model, d_inner_hid=512,
+        #                   n_head=4, d_k=64, d_v=64, layers=2, dropout=0.1, context_emb=False,
+        #                   dilation=False, share_word_emb=False)
+        lr_scheduler = LRSchedulerPerStep(configs['transformer']['init']['d_model'], 4000)
+        # lr_scheduler = LRSchedulerPerEpoch(d_model, 4000, Xtrain.shape[0]/64)  # this scheduler only update lr per epoch
+        # s2s.compile(deserialize(configs['transformer']['optimizer']))
+        training_model.compile(loss={'tgt_layer': losses.masked_ce()},
+                               optimizer=deserialize(configs['transformer']['optimizer']))
 
 
-    # delete model to free up memory
-    K.clear_session()
-    del model
+    model_saver = ModelCheckpoint(mfile, save_best_only=True, save_weights_only=True)
+    csv_logger = CSVLogger(result_path+'.log', append=True)
 
-    # return the training report
-    return loss_history
+    training_model.summary()
+    plot_model(training_model, to_file=snapshot_path+'.png', show_shapes=True, show_layer_names=True)
 
+    try:
+        training_model.load_weights(mfile)
+    except:
+        print('\n\nnew model')
 
-def parse_args():
-    parser = argparse.ArgumentParser(
-        description='Training script for Nico object detection and grasping. '
-                    'The output model is stored in /odg/src/keras_fusionnet/scripts/snapshots')
-    parser.add_argument('--grasp-path',
-                        help='Path to NICO Grasping directory (ie. /odg/datasets/GraspingNico2017).',
-                        default="/odg/datasets/GraspingNico2017")
-    parser.add_argument('--image-dir',
-                        help='name of the image directory (ie. cleaned_samples_v0).',
-                        default="balanced_cleaned_samples-v0")
-    parser.add_argument('--fusionnet-model-type', help='the model chosen for training',
-                        default="fusionnetV1_0")
-
-    parser.add_argument('--pretrained-retinanet',
-                        help='selecting whether pretrained RetinaNet weights are to be loaded',
-                        default=False, type=bool)
-    parser.add_argument('--pretrained-retinanet-model-path',
-                        help='the pretrained RetinaNet model to be loaded',
-                        default="/home/abawi/PycharmProjects/WTM_JOB/object_detection_grasping/src/keras_retinanet/scripts/resnet50_voc_best.h5")
-    parser.add_argument('--freeze-retinanet-weights',
-                        help='freezing the loaded weights',
-                        default=False, type=bool)
-
-    parser.add_argument('--weights',
-                        help='weights to use for initialization (defaults to ImageNet)',
-                        default='imagenet')
-    parser.add_argument('--batch-size',
-                        help='size of the batches', default=20, type=int)
-    parser.add_argument('--epochs',
-                        help='number of epochs', default=300, type=int)
-    parser.add_argument('--identifier',
-                        help='the identifier of the current run. This is a string. If None is set, '
-                                             'a random identifier is generated', type=str)
-    parser.add_argument('--gpu',
-                        help='Id of the GPU to use (as reported by nvidia-smi).')
-
-    parser.add_argument('--generate-train-val-test',
-                        help='choose whether to generate a training, validation and test set on every run',
-                        default=True, type=bool)
-
-    parser.add_argument('--train-val-test-proportions',
-                        help='choose the percentage training, validation and test sets respectively (i.e.: 0.8 0.1 0.1',
-                        default=None, type=float, nargs=3)
-
-    return parser.parse_args()
-
-
-def run(args, optimization_params):
-    return train(args, optimization_params)
+    if args.model == 's2srnn':
+        training_model.fit([Xtrain, Ytrain], None,  batch_size=args.batch_size, epochs=args.epochs,
+                      validation_data=([Xvalid, Yvalid], None),
+                      callbacks=[model_saver, csv_logger])
+    elif args.model == 'transformer':
+        training_model.fit([Xtrain, Ytrain], [Ytrain], batch_size=args.batch_size, epochs=args.epochs,
+                      validation_data=([Xvalid, Yvalid], [Yvalid]), shuffle=True,
+                      callbacks=[lr_scheduler, model_saver, csv_logger])
 
 if __name__ == '__main__':
-    # set the numpy printing to verbose mode
-    # np.set_printoptions(threshold=np.nan)
+    configs = {
+        'transformer': {
+            'init': {
+                'len_limit': 70,
+                'd_model': 256,
+                'd_inner_hid': 512,
+                'n_head': 4,
+                'd_k': 64,
+                'd_v': 64,
+                'layers': 2,
+                'dropout': 0.1,
+                'context_alignment_emb': False,
+                'share_word_emb': False,
+                'dilation': True,
+                'dilation_rate': 3,
+                'dilation_mode': 'non-linear',
+                'dilation_layers': 6
+            },
+            'optimizer': {
+                'class_name': 'adam',
+                'config': {
+                    'lr': 0.001,
+                    'beta_1': 0.9,
+                    'beta_2': 0.98,
+                    'epsilon': 1e-9,
+                    'decay': 0.,
+                    'amsgrad': False
+                }
+            }
+        },
+        's2srnn': {
+            'init': {
+                'latent_dim': 256,
+                'layers': 3,
+            },
+            'optimizer': {
+                'class_name': 'rmsprop',
+                'config': {}
+            }
+        }
+    }
 
-    # parse arguments
-    args = parse_args()
-    # train model
-    training_report = train(args)
-
-    print('best validation loss', training_report.best_val_loss,
-          ' at epoch ', training_report.best_epoch,
-          ' with a training loss of ',  training_report.best_train_loss)
+    main(args=None, configs=configs)

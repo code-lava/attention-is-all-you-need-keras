@@ -4,6 +4,11 @@ from os.path import basename, splitext
 
 from keras.callbacks import *
 
+if __name__ == "__main__" and __package__ is None:
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+    import keras_retinanet.bin  # noqa: F401
+    __package__ = "keras_transformer.bin"
+
 from ..utils import helper, prepare_evaluation
 from ..preprocessing import dataloader as dd
 from ..utils.evaluation.e2emetrics import measure_scores

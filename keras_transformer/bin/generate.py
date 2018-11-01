@@ -3,8 +3,12 @@ import argparse
 
 from keras.callbacks import *
 
-from utils import helper
-from preprocessing import dataloader as dd
+if __name__ == "__main__" and __package__ is None:
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+    import keras_retinanet.bin  # noqa: F401
+    __package__ = "keras_transformer.bin"
+from ..utils import helper
+from ..preprocessing import dataloader as dd
 
 def parse_args(args):
     """ Parse the arguments.
@@ -17,10 +21,10 @@ def parse_args(args):
                         default='e2e')
     parser.add_argument('--id',
                         help='The unique identifier for the current run.',
-                        default=116)
+                        default=118)
     parser.add_argument('--snapshot-dir',
                         help='The snapshot directory.',
-                        default='../snapshots')
+                        default='../../snapshots')
 
     parser.add_argument('--model', help='The model to run [transformer, s2srnn].', default='transformer')
 
@@ -44,11 +48,11 @@ def main(args=None):
     itokens, otokens = dd.MakeS2SDict(None, dict_file=snapshot_path + '_word.txt')
 
     if args.model == 's2srnn':
-        from models.rnn_s2s import RNNSeq2Seq
+        from ..models.rnn_s2s import RNNSeq2Seq
         s2s = RNNSeq2Seq(itokens,otokens,**configs['s2srnn']['init'])
         s2s.compile()
     elif args.model == 'transformer':
-        from models.transformer import Transformer, LRSchedulerPerStep
+        from ..models.transformer import Transformer, LRSchedulerPerStep
         s2s = Transformer(itokens, otokens,**configs['transformer']['init'])
         s2s.compile()
 
