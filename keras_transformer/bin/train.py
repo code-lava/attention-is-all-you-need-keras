@@ -83,7 +83,7 @@ def main(args=None, configs=None):
     elif args.model == 'transformer':
         from ..models.transformer import Transformer, LRSchedulerPerStep
         s2s = Transformer(itokens, otokens,**configs['transformer']['init'])
-        prediction_model, training_model = transformer(inputs=None, transformer_structure=s2s)
+        training_model = transformer(inputs=None, transformer_structure=s2s)
         # below is the baseline transformer
         # s2s = Transformer(itokens, otokens, len_limit=70, d_model=d_model, d_inner_hid=512,
         #                   n_head=4, d_k=64, d_v=64, layers=2, dropout=0.1, context_emb=False,
@@ -91,7 +91,7 @@ def main(args=None, configs=None):
         lr_scheduler = LRSchedulerPerStep(configs['transformer']['init']['d_model'], 4000)
         # lr_scheduler = LRSchedulerPerEpoch(d_model, 4000, Xtrain.shape[0]/64)  # this scheduler only update lr per epoch
         # s2s.compile(deserialize(configs['transformer']['optimizer']))
-        training_model.compile(loss={'tgt_layer': losses.masked_ce()},
+        training_model.compile(loss={'transformer_regression': losses.masked_ce(layer_size=Ytrain.shape[1])},
                                optimizer=deserialize(configs['transformer']['optimizer']))
 
 

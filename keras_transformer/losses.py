@@ -1,10 +1,11 @@
 import keras.backend as backend
 from keras.layers.core import Lambda
 
-def masked_ce():
+def masked_ce(layer_size):
+
     def _masked_ce(y_true, y_pred):
         # backend.reshape(y_true, (102))
-        y_true = backend.tf.reshape(y_true[:, 1:], [-1,99])
+        y_true = backend.tf.reshape(y_true[:, 1:], [-1,layer_size-1])
         y_true = backend.cast(y_true, 'int32')
         # y_true = backend.print_tensor(y_true, 'y_true values')
         # y_pred = backend.print_tensor(y_pred, 'y_pred values')
