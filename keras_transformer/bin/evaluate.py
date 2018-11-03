@@ -53,8 +53,6 @@ def parse_args(args):
 
     parser.add_argument('--model', help='The model to run [transformer, s2srnn].', default='transformer')
 
-    # TODO: Add arguments to alter transformer and s2s properties (not important at the moment)
-
     return parser.parse_args(args)
 
 
@@ -106,13 +104,13 @@ def main(args=None):
             line_raw = line_raw.split('\t')
             if prev_line != line_raw[0]:
                 if args.beam_search:
-                    rets = s2s.beam_search(dd.parenthesis_split(line_raw[0], delimiter=' ', lparen="[", rparen="]"), delimiter=' ', topk=args.beam_width)
+                    rets = s2s.beam_search(helper.parenthesis_split(line_raw[0], delimiter=' ', lparen="[", rparen="]"), delimiter=' ', topk=args.beam_width)
                     for x, y in rets:
                         print(x)
                         outputs.append(x)
                         break
                 else:
-                    rets = s2s.decode_sequence_fast(dd.parenthesis_split(line_raw[0], delimiter=' ', lparen="[", rparen="]"), delimiter=' ')
+                    rets = s2s.decode_sequence_fast(helper.parenthesis_split(line_raw[0], delimiter=' ', lparen="[", rparen="]"), delimiter=' ')
                     print(rets)
                     outputs.append(rets)
 

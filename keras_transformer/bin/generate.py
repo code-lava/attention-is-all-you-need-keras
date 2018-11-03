@@ -28,8 +28,6 @@ def parse_args(args):
 
     parser.add_argument('--model', help='The model to run [transformer, s2srnn].', default='transformer')
 
-    # TODO: Add arguments to alter transformer and s2s properties (not important at the moment)
-
     return parser.parse_args(args)
 
 
@@ -65,15 +63,15 @@ def main(args=None):
 
     start = time.clock()
     print(s2s.decode_sequence_fast(
-        dd.parenthesis_split('name[Alimentum] , area[city centre] , familyFriendly[yes] , near[Burger King]',
+        helper.parenthesis_split('name[Alimentum] , area[city centre] , familyFriendly[yes] , near[Burger King]',
                              delimiter=" ", lparen="[", rparen="]"), delimiter=' '))
     end = time.clock()
     print("Time per sequence: {} ".format((end - start)))
     while True:
         quest = input('> ')
         print(
-            s2s.decode_sequence_fast(dd.parenthesis_split(quest, delimiter=' ', lparen="[", rparen="]"), delimiter=' '))
-        rets = s2s.beam_search(dd.parenthesis_split(quest, delimiter=' ', lparen="[", rparen="]"), delimiter=' ')
+            s2s.decode_sequence_fast(helper.parenthesis_split(quest, delimiter=' ', lparen="[", rparen="]"), delimiter=' '))
+        rets = s2s.beam_search(helper.parenthesis_split(quest, delimiter=' ', lparen="[", rparen="]"), delimiter=' ')
         for x, y in rets: print(x, y)
 
 
