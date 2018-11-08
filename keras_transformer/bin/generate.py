@@ -62,7 +62,7 @@ def main(args=None):
         exit(-1)
 
     start = time.clock()
-    print(s2s.decode_sequence_fast(
+    print(s2s.decode_sequence(
         helper.parenthesis_split('name[Alimentum] , area[city centre] , familyFriendly[yes] , near[Burger King]',
                              delimiter=" ", lparen="[", rparen="]"), delimiter=' '))
     end = time.clock()
