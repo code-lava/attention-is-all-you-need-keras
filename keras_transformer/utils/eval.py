@@ -1,15 +1,51 @@
-import sys
-import argparse
-from os.path import basename, splitext
+import progressbar
+assert(callable(progressbar.progressbar)), "Using wrong progressbar module, install 'progressbar2' instead."
 
 from keras.callbacks import *
 
-from ..utils import helper
-# from ..preprocessing import dataloader as dd
-# from ..utils.evaluation.e2emetrics import measure_scores
+from ..utils.evaluation.e2emetrics import measure_scores
+
+# TODO (fabawi): Might need to integrate fast decoders, although the difference is not that huge (keep it in mind)
+# def make_fast_decode_model(self):
+#     src_seq_input = Input(shape=(None,), dtype='int32')
+#     tgt_seq_input = Input(shape=(None,), dtype='int32')
+#     src_seq = src_seq_input
+#     tgt_seq = tgt_seq_input
+#
+#     src_pos = Lambda(self.get_pos_seq)(src_seq)
+#     tgt_pos = Lambda(self.get_pos_seq)(tgt_seq)
+#     if not self.src_loc_info: src_pos = None
+#     enc_output = self.encoder(src_seq, src_pos)
+#     self.encode_model = Model(src_seq_input, enc_output)
+#
+#     enc_ret_input = Input(shape=(None, self.d_model))
+#     dec_output = self.decoder(tgt_seq, tgt_pos, src_seq, enc_ret_input)
+#     final_output = self.target_layer(dec_output)
+#     self.decode_model = Model([src_seq_input, enc_ret_input, tgt_seq_input], final_output)
+#
+#     self.encode_model.compile('adam', 'mse')
+#     self.decode_model.compile('adam', 'mse')
+#
+# def decode_sequence_fast(self, input_seq, delimiter=''):
+#     if self.decode_model is None: self.make_fast_decode_model()
+#     src_seq = self.make_src_seq_matrix(input_seq)
+#     enc_ret = self.encode_model.predict_on_batch(src_seq)
+#
+#     decoded_tokens = []
+#     target_seq = np.zeros((1, self.len_limit), dtype='int32')
+#     target_seq[0, 0] = self.o_tokens.startid()
+#     for i in range(self.len_limit - 1):
+#         output = self.decode_model.predict_on_batch([src_seq, enc_ret, target_seq])
+#         sampled_index = np.argmax(output[0, i, :])
+#         sampled_token = self.o_tokens.token(sampled_index)
+#         decoded_tokens.append(sampled_token)
+#         if sampled_index == self.o_tokens.endid(): break
+#         target_seq[0, i + 1] = sampled_index
+#     return delimiter.join(decoded_tokens[:-1])
+#
 
 def _make_src_seq_matrix(input_seq, i_tokens):
-    src_seq = np.zeros((1, len(input_seq) + 3), dtype='int32')
+    src_seq = np.zeros((1, len(input_seq)+3), dtype='int32')
     src_seq[0, 0] = i_tokens.startid()
     for i, z in enumerate(input_seq): src_seq[0, 1 + i] = i_tokens.id(z)
     src_seq[0, len(input_seq) + 1] = i_tokens.endid()
@@ -17,12 +53,12 @@ def _make_src_seq_matrix(input_seq, i_tokens):
 
 
 def _decode_sequence(model, input_seq, i_tokens, o_tokens, len_limit, delimiter=''):
-    src_seq = input_seq
+    src_seq = _make_src_seq_matrix(input_seq, i_tokens)
     decoded_tokens = []
     target_seq = np.zeros((1, len_limit), dtype='int32')
     target_seq[0, 0] =  o_tokens.startid()
     for i in range(len_limit - 1):
-        output = model.predict_on_batch([[src_seq], target_seq])
+        output = model.predict_on_batch([src_seq, target_seq])
         sampled_index = np.argmax(output[0, i, :])
         sampled_token = o_tokens.token(sampled_index)
         decoded_tokens.append(sampled_token)
@@ -30,46 +66,9 @@ def _decode_sequence(model, input_seq, i_tokens, o_tokens, len_limit, delimiter=
         target_seq[0, i + 1] = sampled_index
     return delimiter.join(decoded_tokens[:-1])
 
-    # def make_fast_decode_model(self):
-    #     src_seq_input = Input(shape=(None,), dtype='int32')
-    #     tgt_seq_input = Input(shape=(None,), dtype='int32')
-    #     src_seq = src_seq_input
-    #     tgt_seq = tgt_seq_input
-    #
-    #     src_pos = Lambda(self.get_pos_seq)(src_seq)
-    #     tgt_pos = Lambda(self.get_pos_seq)(tgt_seq)
-    #     if not self.src_loc_info: src_pos = None
-    #     enc_output = self.encoder(src_seq, src_pos)
-    #     self.encode_model = Model(src_seq_input, enc_output)
-    #
-    #     enc_ret_input = Input(shape=(None, self.d_model))
-    #     dec_output = self.decoder(tgt_seq, tgt_pos, src_seq, enc_ret_input)
-    #     final_output = self.target_layer(dec_output)
-    #     self.decode_model = Model([src_seq_input, enc_ret_input, tgt_seq_input], final_output)
-    #
-    #     self.encode_model.compile('adam', 'mse')
-    #     self.decode_model.compile('adam', 'mse')
-    #
-    # def decode_sequence_fast(self, input_seq, delimiter=''):
-    #     if self.decode_model is None: self.make_fast_decode_model()
-    #     src_seq = self.make_src_seq_matrix(input_seq)
-    #     enc_ret = self.encode_model.predict_on_batch(src_seq)
-    #
-    #     decoded_tokens = []
-    #     target_seq = np.zeros((1, self.len_limit), dtype='int32')
-    #     target_seq[0, 0] = self.o_tokens.startid()
-    #     for i in range(self.len_limit - 1):
-    #         output = self.decode_model.predict_on_batch([src_seq, enc_ret, target_seq])
-    #         sampled_index = np.argmax(output[0, i, :])
-    #         sampled_token = self.o_tokens.token(sampled_index)
-    #         decoded_tokens.append(sampled_token)
-    #         if sampled_index == self.o_tokens.endid(): break
-    #         target_seq[0, i + 1] = sampled_index
-    #     return delimiter.join(decoded_tokens[:-1])
-    #
 def _beam_search(model, input_seq, i_tokens, o_tokens, len_limit, topk=5, delimiter=''):
-    src_seq = input_seq
-    src_seq = np.expand_dims(src_seq, axis=0).repeat(topk, 0)
+    src_seq = _make_src_seq_matrix(input_seq, i_tokens)
+    src_seq = src_seq.repeat(topk, 0)
 
     final_results = []
     decoded_tokens = [[] for _ in range(topk)]
@@ -106,15 +105,47 @@ def _beam_search(model, input_seq, i_tokens, o_tokens, len_limit, topk=5, delimi
     return final_results
 
 
-def evaluate(generator, model, save_path=None):
+def evaluate(generator, model, beam_search=False, beam_width=5, evaluate_metrics=None, save_path=None):
+    outputs = []
+    for i in progressbar.progressbar(range(generator.size()), prefix='Running Transformer network: '):
+        padded_line = generator.get_source_sequence(i)
+        if beam_search:
+            rets = _beam_search(
+                model=model,
+                input_seq=padded_line,
+                i_tokens= generator.i_tokens,
+                o_tokens=generator.o_tokens,
+                len_limit=generator.sequence_max_length,
+                topk=beam_width,
+                delimiter=' ')
+            for x, y in rets:
+                print(x)
+                outputs.append(x)
+                break
+        else:
+            rets = _decode_sequence(
+                model=model,
+                input_seq=padded_line,
+                i_tokens=generator.i_tokens,
+                o_tokens=generator.o_tokens,
+                len_limit=generator.sequence_max_length,
+                delimiter=' ')
+            print(rets)
+            outputs.append(rets)
 
-    padded_line = generator.load_source(1)
-    rets = _beam_search(
-        model=model,
-        input_seq=padded_line,
-        i_tokens= generator.i_tokens,
-        o_tokens=generator.o_tokens,
-        len_limit=generator.sequence_max_length,
-        topk=10,
-        delimiter=' ')
-    for x, y in rets: print(x, y)
+    if evaluate_metrics:
+        with open(save_path, 'w') as fbase:
+            for output in outputs:
+                fbase.write("%s\n" % output)
+        del outputs
+
+        baseline_file = save_path
+        golden_file = generator.golden_data_file
+        data_src, data_ref, data_sys = measure_scores.load_data(golden_file, baseline_file, None)
+        measure_names, scores = measure_scores.evaluate(data_src, data_ref, data_sys)
+        print(scores)
+
+        return scores
+    else:
+
+        return 0

@@ -12,6 +12,8 @@ if __name__ == "__main__" and __package__ is None:
 from ..utils import helper, prepare_evaluation
 from ..preprocessing import dataloader as dd
 from ..utils.evaluation.e2emetrics import measure_scores
+from ..models.transformer import transformer, transformer_inference, Transformer
+from ..utils.eval import _beam_search, _decode_sequence
 
 def parse_args(args):
     """ Parse the arguments.
@@ -71,21 +73,15 @@ def main(args=None):
     # load configs
     configs = helper.load_settings(json_file=snapshot_path + '.configs')
 
-    itokens, otokens = dd.MakeS2SDict(None, dict_file=snapshot_path + '_word.txt')
+    itokens, otokens = dd.make_s2s_dict(None, dict_file=snapshot_path + '_word.txt')
 
-    if args.model == 's2srnn':
-        from ..models.rnn_s2s import RNNSeq2Seq
-        s2s = RNNSeq2Seq(itokens,otokens,**configs['s2srnn']['init'])
-        s2s.compile()
-    elif args.model == 'transformer':
-        from ..models.transformer import Transformer
-        s2s = Transformer(itokens, otokens,**configs['transformer']['init'])
-        s2s.compile()
-    else:
-        raise NotImplementedError(args.model + " has not been defined. Use one of the networks implemented")
-
+    s2s = Transformer(itokens, otokens,**configs['transformer']['init'])
+    model = transformer(inputs=None, transformer_structure=s2s)
+    model = transformer_inference(model)
     try:
-        s2s.model.load_weights(mfile)
+        model.load_weights(mfile)
+        model.compile('adam', 'mse')
+
 
     except:
         print('\n\nModel not found or incompatible with network! Exiting now')
@@ -104,7 +100,7 @@ def main(args=None):
             line_raw = line_raw.split('\t')
             if prev_line != line_raw[0]:
                 if args.beam_search:
-                    rets = s2s.beam_search(helper.parenthesis_split(line_raw[0], delimiter=' ', lparen="[", rparen="]"), delimiter=' ', topk=args.beam_width)
+                    rets = s2s._beam_search(helper.parenthesis_split(line_raw[0], delimiter=' ', lparen="[", rparen="]"), delimiter=' ', topk=args.beam_width)
                     for x, y in rets:
                         print(x)
                         outputs.append(x)

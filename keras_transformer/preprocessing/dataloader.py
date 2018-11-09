@@ -3,6 +3,7 @@ import numpy as np
 
 from ..utils import helper
 
+# TODO (fabawi): This class is to be removed soon
 
 class TokenList:
     def __init__(self, token_list):
@@ -21,7 +22,7 @@ class TokenList:
 
 
 
-def MakeS2SDict(fn=None, min_freq=5, delimiter=' ',lparen="[", rparen="]", dict_file=None):
+def make_s2s_dict(fn=None, min_freq=5, delimiter=' ',lparen="[", rparen="]", dict_file=None):
     if dict_file is not None and os.path.exists(dict_file):
         print('loading', dict_file)
         lst = helper.load_list(dict_file)
@@ -49,7 +50,7 @@ def MakeS2SDict(fn=None, min_freq=5, delimiter=' ',lparen="[", rparen="]", dict_
     return itokens, otokens
 
 
-def MakeS2SData(fn=None, itokens=None, otokens=None, delimiter=' ', lparen="[", rparen="]", h5_file=None, max_len=200):
+def make_s2s_data(fn=None, itokens=None, otokens=None, delimiter=' ', lparen="[", rparen="]", h5_file=None, max_len=200):
     import h5py
 
     if h5_file is not None and os.path.exists(h5_file):
@@ -70,7 +71,7 @@ def MakeS2SData(fn=None, itokens=None, otokens=None, delimiter=' ', lparen="[", 
     return X, Y
 
 
-def S2SDataGenerator(fn, itokens, otokens, batch_size=64, delimiter=' ', lparen="[", rparen="]", max_len=999):
+def data_generator(fn, itokens, otokens, batch_size=64, delimiter=' ', lparen="[", rparen="]", max_len=999):
     Xs = [[], []]
     while True:
         for ss in helper.load_csv_g(fn):
@@ -81,8 +82,3 @@ def S2SDataGenerator(fn, itokens, otokens, batch_size=64, delimiter=' ', lparen=
                 yield [X, Y], None
                 Xs = [[], []]
 
-
-if __name__ == '__main__':
-    itokens, otokens = MakeS2SDict('en2de.s2s.txt', 6, dict_file='en2de_word.txt')
-    X, Y = MakeS2SData('en2de.s2s.txt', itokens, otokens, h5_file='en2de.h5')
-    print(X.shape, Y.shape)

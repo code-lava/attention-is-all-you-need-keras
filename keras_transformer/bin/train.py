@@ -11,12 +11,38 @@ from keras.utils.vis_utils import plot_model
 if __name__ == "__main__" and __package__ is None:
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
     import keras_retinanet.bin  # noqa: F401
+
     __package__ = "keras_transformer.bin"
 
-from ..models.transformer import transformer
+from ..models.transformer import transformer, Transformer
 from ..utils import helper
-from ..preprocessing import dataloader as dd
-from .. import losses
+from ..preprocessing.generator import CSVGenerator
+from keras_transformer import losses, metrics
+
+
+class LRSchedulerPerStep(Callback):
+    def __init__(self, d_model, warmup=4000):
+        self.basic = d_model ** -0.5
+        self.warm = warmup ** -1.5
+        self.step_num = 0
+
+    def on_batch_begin(self, batch, logs=None):
+        self.step_num += 1
+        lr = self.basic * min(self.step_num ** -0.5, self.step_num * self.warm)
+        K.set_value(self.model.optimizer.lr, lr)
+
+
+class LRSchedulerPerEpoch(Callback):
+    def __init__(self, d_model, warmup=4000, num_per_epoch=1000):
+        self.basic = d_model ** -0.5
+        self.warm = warmup ** -1.5
+        self.num_per_epoch = num_per_epoch
+        self.step_num = 1
+
+    def on_epoch_begin(self, epoch, logs=None):
+        self.step_num += self.num_per_epoch
+        lr = self.basic * min(self.step_num ** -0.5, self.step_num * self.warm)
+        K.set_value(self.model.optimizer.lr, lr)
 
 def parse_args(args):
     """ Parse the arguments.
@@ -43,13 +69,13 @@ def parse_args(args):
                         help='The logging directory.',
                         default='../../results')
 
-    parser.add_argument('--model', help='The model to run [transformer, s2srnn].', default='transformer')
+    parser.add_argument('--model', help='The model to run [transformer].', default='transformer')
     parser.add_argument('--batch-size', help='The size of a single batch.', default=64)
     parser.add_argument('--epochs', help='Number of epochs.', default=30)
-
-    # TODO: Add arguments to alter transformer and s2s configs (not important at the moment)
+    parser.add_argument('--steps', help='Number of steps per epoch.', default=10000)
 
     return parser.parse_args(args)
+
 
 def main(args=None, configs=None):
     # parse arguments
@@ -57,63 +83,45 @@ def main(args=None, configs=None):
         args = sys.argv[1:]
     args = parse_args(args)
 
-
-    # dataset_name = args.train_file.split(os.sep)[-2]
-    snapshot_path = helper.make_dir(os.path.join(args.snapshot_dir, str(args.id))) + os.sep + args.model + '_' + args.dataset_name
-    result_path = helper.make_dir(os.path.join(args.logging_dir, str(args.id))) + os.sep + args.model + '_' + args.dataset_name
+    snapshot_path = helper.make_dir(
+        os.path.join(args.snapshot_dir, str(args.id))) + os.sep + args.model + '_' + args.dataset_name
+    result_path = helper.make_dir(
+        os.path.join(args.logging_dir, str(args.id))) + os.sep + args.model + '_' + args.dataset_name
     mfile = snapshot_path + '.model.h5'
 
     # store the args and configs
     helper.store_settings(store_object=args, json_file=snapshot_path + '.args')
     helper.store_settings(store_object=configs, json_file=snapshot_path + '.configs')
 
-    itokens, otokens = dd.MakeS2SDict(args.train_file, dict_file=snapshot_path + '_word.txt')
-    Xtrain, Ytrain = dd.MakeS2SData(args.train_file, itokens, otokens, h5_file=snapshot_path + '.train.h5')
-    Xvalid, Yvalid = dd.MakeS2SData(args.valid_file, itokens, otokens, h5_file=snapshot_path + '.valid.h5')
+    train_generator = CSVGenerator(args.train_file, batch_size=args.batch_size)
+    i_tokens = train_generator.i_tokens
+    o_tokens = train_generator.o_tokens
 
-    print('seq 1 words:', itokens.num())
-    print('seq 2 words:', otokens.num())
-    print('train shapes:', Xtrain.shape, Ytrain.shape)
-    print('valid shapes:', Xvalid.shape, Yvalid.shape)
+    print('seq 1 words:', i_tokens.num())
+    print('seq 2 words:', o_tokens.num())
 
-    if args.model == 's2srnn':
-        from ..models.rnn_s2s import RNNSeq2Seq
-        s2s = RNNSeq2Seq(itokens,otokens,**configs['s2srnn']['init'])
-        s2s.compile(deserialize(configs['s2srnn']['optimizer']))
-    elif args.model == 'transformer':
-        from ..models.transformer import Transformer, LRSchedulerPerStep
-        s2s = Transformer(itokens, otokens,**configs['transformer']['init'])
-        training_model = transformer(inputs=None, transformer_structure=s2s)
-        # below is the baseline transformer
-        # s2s = Transformer(itokens, otokens, len_limit=70, d_model=d_model, d_inner_hid=512,
-        #                   n_head=4, d_k=64, d_v=64, layers=2, dropout=0.1, context_emb=False,
-        #                   dilation=False, share_word_emb=False)
-        lr_scheduler = LRSchedulerPerStep(configs['transformer']['init']['d_model'], 4000)
-        # lr_scheduler = LRSchedulerPerEpoch(d_model, 4000, Xtrain.shape[0]/64)  # this scheduler only update lr per epoch
-        # s2s.compile(deserialize(configs['transformer']['optimizer']))
-        training_model.compile(loss={'transformer_regression': losses.masked_ce(layer_size=Ytrain.shape[1])},
-                               optimizer=deserialize(configs['transformer']['optimizer']))
+    s2s = Transformer(i_tokens, o_tokens, **configs['transformer']['init'])
+    training_model = transformer(inputs=None, transformer_structure=s2s)
+    lr_scheduler = LRSchedulerPerStep(configs['transformer']['init']['d_model'], 4000)
 
+    training_model.compile(
+        loss={'transformer_regression': losses.masked_ce(layer_size=configs['transformer']['init']['len_limit'])},
+        optimizer=deserialize(configs['transformer']['optimizer']))
 
     model_saver = ModelCheckpoint(mfile, save_best_only=True, save_weights_only=True)
-    csv_logger = CSVLogger(result_path+'.log', append=True)
+    csv_logger = CSVLogger(result_path + '.log', append=True)
 
     training_model.summary()
-    plot_model(training_model, to_file=snapshot_path+'.png', show_shapes=True, show_layer_names=True)
+    plot_model(training_model, to_file=snapshot_path + '.png', show_shapes=True, show_layer_names=True)
 
     try:
         training_model.load_weights(mfile)
     except:
         print('\n\nnew model')
 
-    if args.model == 's2srnn':
-        training_model.fit([Xtrain, Ytrain], None,  batch_size=args.batch_size, epochs=args.epochs,
-                      validation_data=([Xvalid, Yvalid], None),
-                      callbacks=[model_saver, csv_logger])
-    elif args.model == 'transformer':
-        training_model.fit([Xtrain, Ytrain], [Ytrain], batch_size=args.batch_size, epochs=args.epochs,
-                      validation_data=([Xvalid, Yvalid], [Yvalid]), shuffle=True,
-                      callbacks=[lr_scheduler, model_saver, csv_logger])
+    training_model.fit_generator(train_generator, epochs=args.epochs, shuffle=False, steps_per_epoch=args.steps,
+                                 callbacks=[lr_scheduler, model_saver, csv_logger])
+
 
 if __name__ == '__main__':
     configs = {
@@ -129,7 +137,7 @@ if __name__ == '__main__':
                 'dropout': 0.1,
                 'context_alignment_emb': False,
                 'share_word_emb': False,
-                'dilation': True,
+                'dilation': False,
                 'dilation_rate': 3,
                 'dilation_mode': 'non-linear',
                 'dilation_layers': 6
