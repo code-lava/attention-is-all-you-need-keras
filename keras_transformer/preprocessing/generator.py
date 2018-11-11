@@ -24,7 +24,7 @@ import csv
 import sys
 import os.path
 
-from keras_transformer.utils.helper import (parenthesis_split, pad_to_fixed, freq_dict_2_list)
+from keras_transformer.utils.helper import (parenthesis_split, pad_to_fixed, freq_dict_2_list, store_list, load_list)
 
 
 
@@ -115,7 +115,8 @@ class CSVGenerator(object):
                  rparen=']',
                  min_word_count=1,
                  i_tokens=None,
-                 o_tokens=None
+                 o_tokens=None,
+                 tokens_file=None
                  ):
 
         """ Initialize a CSV data generator.
@@ -158,8 +159,9 @@ class CSVGenerator(object):
         if i_tokens is not None and o_tokens is not None:
             self.i_tokens, self.o_tokens = i_tokens, o_tokens
         else:
-            self.i_tokens, self.o_tokens = self.create_lookup_table(min_freq=min_word_count)
+            self.i_tokens, self.o_tokens = self.create_lookup_table(min_freq=min_word_count, tokens_file=tokens_file)
         self.group_sources()
+
 
     def size(self):
         """ Size of the dataset.
@@ -239,7 +241,15 @@ class CSVGenerator(object):
         seq_length = parenthesis_split(seq, self.delimiter, self.lparen, self.rparen)
         return seq_length
 
-    def create_lookup_table(self, min_freq=1):
+    def create_lookup_table(self, min_freq=1, tokens_file=None):
+        if tokens_file is not None and os.path.exists(tokens_file):
+            print('loading', tokens_file)
+            lst = load_list(tokens_file)
+            midpos = lst.index('<@@@>')
+            itokens = TokenList(lst[:midpos])
+            otokens = TokenList(lst[midpos + 1:])
+            return itokens, otokens
+
         data = self.command_data
         wdicts = [{}, {}]
         for key, ss in data.items():
@@ -254,6 +264,8 @@ class CSVGenerator(object):
         i_tokens = TokenList(wlists[0])
         o_tokens = TokenList(wlists[1])
 
+        if tokens_file is not None:
+            store_list(wlists[0] + ['<@@@>'] + wlists[1], tokens_file)
         return i_tokens, o_tokens
 
     def compute_inputs(self, source_group, target_group):

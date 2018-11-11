@@ -55,13 +55,13 @@ def parse_args(args):
                         default='e2e')
     parser.add_argument('--train-file',
                         help='Path to training source and target sequences file (both separated by a tab).',
-                        default='/home/abawi/PycharmProjects/THESIS/NEW/datasets/GeneratedData/TransformerMultimodalCSV/virtual/Annotations/annotations.csv')
+                        default='/home/abawi/PycharmProjects/THESIS/NEW/datasets/GeneratedData/TransformerMultimodalCSV/virtual/Annotations/train.csv')
     parser.add_argument('--valid-file',
                         help='Path to validation source and target sequences file (both separated by a tab).',
-                        default='/home/abawi/PycharmProjects/THESIS/NEW/datasets/GeneratedData/TransformerMultimodalCSV/virtual/Annotations/annotations.csv')
+                        default='/home/abawi/PycharmProjects/THESIS/NEW/datasets/GeneratedData/TransformerMultimodalCSV/virtual/Annotations/train.csv')
     parser.add_argument('--id',
                         help='The unique identifier for the current run.',
-                        default=118)
+                        default=119)
     parser.add_argument('--snapshot-dir',
                         help='The snapshot directory.',
                         default='../../snapshots')
@@ -69,10 +69,9 @@ def parse_args(args):
                         help='The logging directory.',
                         default='../../results')
 
-    parser.add_argument('--model', help='The model to run [transformer].', default='transformer')
     parser.add_argument('--batch-size', help='The size of a single batch.', default=64)
     parser.add_argument('--epochs', help='Number of epochs.', default=30)
-    parser.add_argument('--steps', help='Number of steps per epoch.', default=10000)
+    parser.add_argument('--steps', help='Number of steps per epoch.', default=10)
 
     return parser.parse_args(args)
 
@@ -84,18 +83,21 @@ def main(args=None, configs=None):
     args = parse_args(args)
 
     snapshot_path = helper.make_dir(
-        os.path.join(args.snapshot_dir, str(args.id))) + os.sep + args.model + '_' + args.dataset_name
+        os.path.join(args.snapshot_dir, str(args.id))) + os.sep + '_' + args.dataset_name
     result_path = helper.make_dir(
-        os.path.join(args.logging_dir, str(args.id))) + os.sep + args.model + '_' + args.dataset_name
+        os.path.join(args.logging_dir, str(args.id))) + os.sep + '_' + args.dataset_name
     mfile = snapshot_path + '.model.h5'
 
     # store the args and configs
     helper.store_settings(store_object=args, json_file=snapshot_path + '.args')
     helper.store_settings(store_object=configs, json_file=snapshot_path + '.configs')
 
-    train_generator = CSVGenerator(args.train_file, batch_size=args.batch_size)
+    train_generator = CSVGenerator(args.train_file, batch_size=args.batch_size, tokens_file=snapshot_path + '_word.txt')
     i_tokens = train_generator.i_tokens
     o_tokens = train_generator.o_tokens
+
+    validation_generator = CSVGenerator(args.valid_file, i_tokens=i_tokens, o_tokens=o_tokens, batch_size=args.batch_size)
+
 
     print('seq 1 words:', i_tokens.num())
     print('seq 2 words:', o_tokens.num())
@@ -105,7 +107,7 @@ def main(args=None, configs=None):
     lr_scheduler = LRSchedulerPerStep(configs['transformer']['init']['d_model'], 4000)
 
     training_model.compile(
-        loss={'transformer_regression': losses.masked_ce(layer_size=configs['transformer']['init']['len_limit'])},
+        loss={'transformer_classification': losses.masked_ce(layer_size=configs['transformer']['init']['len_limit'])},
         optimizer=deserialize(configs['transformer']['optimizer']))
 
     model_saver = ModelCheckpoint(mfile, save_best_only=True, save_weights_only=True)
@@ -120,14 +122,15 @@ def main(args=None, configs=None):
         print('\n\nnew model')
 
     training_model.fit_generator(train_generator, epochs=args.epochs, shuffle=False, steps_per_epoch=args.steps,
-                                 callbacks=[lr_scheduler, model_saver, csv_logger])
+                                 callbacks=[lr_scheduler, model_saver, csv_logger],
+                                 validation_data=validation_generator, validation_steps=validation_generator.size())
 
 
 if __name__ == '__main__':
     configs = {
         'transformer': {
             'init': {
-                'len_limit': 70,
+                'len_limit': 100,
                 'd_model': 256,
                 'd_inner_hid': 512,
                 'n_head': 4,

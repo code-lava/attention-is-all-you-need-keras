@@ -27,9 +27,6 @@ def parse_args(args):
     parser.add_argument('--valid-file',
                         help='Path to validation source and target sequences file (both separated by a tab).',
                         default='../data/e2e/devset.txt')
-    parser.add_argument('--create-golden',
-                        help='If set to true, will create the golden (human) sentences file in the format accepted by the e2e-metrics and saves it in the validation file directory.',
-                        default=False)
     parser.add_argument('--evaluate-metrics',
                         help='If set to true, will evaluate on e2e-metrics and saves the output results.',
                         default=True)
@@ -45,15 +42,13 @@ def parse_args(args):
 
     parser.add_argument('--id',
                         help='The unique identifier for the current run.',
-                        default=116)
+                        default=119)
     parser.add_argument('--snapshot-dir',
                         help='The snapshot directory.',
-                        default='../snapshots')
+                        default='../../snapshots')
     parser.add_argument('--logging-dir',
                         help='The logging directory.',
-                        default='../results')
-
-    parser.add_argument('--model', help='The model to run [transformer, s2srnn].', default='transformer')
+                        default='../../results')
 
     return parser.parse_args(args)
 
@@ -64,8 +59,8 @@ def main(args=None):
         args = sys.argv[1:]
     args = parse_args(args)
 
-    snapshot_path = helper.make_dir(os.path.join(args.snapshot_dir, str(args.id))) + os.sep + args.model + '_' + args.dataset_name
-    result_path = helper.make_dir(os.path.join(args.logging_dir, str(args.id))) + os.sep + args.model + '_' + args.dataset_name
+    snapshot_path = helper.make_dir(os.path.join(args.snapshot_dir, str(args.id))) + os.sep + '_' + args.dataset_name
+    result_path = helper.make_dir(os.path.join(args.logging_dir, str(args.id))) + os.sep +  '_' + args.dataset_name
     mfile = snapshot_path + '.model.h5'
     golden_file = args.valid_file[0:args.valid_file.rindex('.')] + '.metric_golden.txt'
     baseline_file = snapshot_path + '.metric_baseline.txt'
@@ -73,9 +68,9 @@ def main(args=None):
     # load configs
     configs = helper.load_settings(json_file=snapshot_path + '.configs')
 
-    itokens, otokens = dd.make_s2s_dict(None, dict_file=snapshot_path + '_word.txt')
+    i_tokens, o_tokens = dd.make_s2s_dict(None, dict_file=snapshot_path + '_word.txt')
 
-    s2s = Transformer(itokens, otokens,**configs['transformer']['init'])
+    s2s = Transformer(i_tokens, o_tokens,**configs['transformer']['init'])
     model = transformer(inputs=None, transformer_structure=s2s)
     model = transformer_inference(model)
     try:
@@ -99,17 +94,27 @@ def main(args=None):
         for line_raw_index, line_raw in enumerate(lines):
             line_raw = line_raw.split('\t')
             if prev_line != line_raw[0]:
+                padded_line = helper.parenthesis_split(line_raw[0], delimiter=' ', lparen="[", rparen="]")
                 if args.beam_search:
-                    rets = s2s._beam_search(helper.parenthesis_split(line_raw[0], delimiter=' ', lparen="[", rparen="]"), delimiter=' ', topk=args.beam_width)
+                    rets = _beam_search(
+                        model=model,
+                        input_seq=padded_line,
+                        i_tokens=i_tokens,
+                        o_tokens=o_tokens,
+                        len_limit=configs['transformer']['init']['len_limit'],
+                        topk=args.beam_width,
+                        delimiter=' ')
                     for x, y in rets:
                         print(x)
                         outputs.append(x)
                         break
                 else:
-                    rets = s2s.decode_sequence_fast(helper.parenthesis_split(line_raw[0], delimiter=' ', lparen="[", rparen="]"), delimiter=' ')
-                    print(rets)
-                    outputs.append(rets)
-
+                    ret = _decode_sequence(model=model,
+                                           input_seq=padded_line,
+                                           i_tokens=i_tokens,
+                                           o_tokens=o_tokens,
+                                           len_limit=configs['transformer']['init']['len_limit'])
+                    outputs.append(ret)
             prev_line = line_raw[0]
 
         with open(baseline_file, 'w') as fbase:
@@ -128,5 +133,7 @@ def main(args=None):
             search_method = 'greedy'
         valid_name = splitext(basename(args.valid_file))[0]
         helper.store_settings(scores.__repr__(), result_path + '_' + search_method + '_' + valid_name + '.metric_eval')
+
+
 if __name__ == '__main__':
     main()

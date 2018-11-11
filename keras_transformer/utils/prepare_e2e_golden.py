@@ -23,4 +23,4 @@ def create_golden_sentences(input_file, output_file):
     return output_file
 
 if __name__ == "__main__":
-    create_golden_sentences('../data/e2e/devset.txt', 'dummy.txt')
+    create_golden_sentences('../data/e2e/devset.csv', 'dummy.txt')

@@ -25,12 +25,10 @@ def parse_args(args):
                         default='e2e')
     parser.add_argument('--id',
                         help='The unique identifier for the current run.',
-                        default=118)
+                        default=119)
     parser.add_argument('--snapshot-dir',
                         help='The snapshot directory.',
                         default='../../snapshots')
-
-    parser.add_argument('--model', help='The model to run [transformer].', default='transformer')
 
     return parser.parse_args(args)
 
@@ -42,7 +40,7 @@ def main(args=None):
     args = parse_args(args)
 
     snapshot_path = helper.make_dir(os.path.join(args.snapshot_dir, str(args.id))) + \
-                    os.sep + args.model + '_' + args.dataset_name
+                    os.sep + '_' + args.dataset_name
     mfile = snapshot_path + '.model.h5'
 
     # load configs
