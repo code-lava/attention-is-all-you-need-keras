@@ -9,7 +9,7 @@ if __name__ == "__main__" and __package__ is None:
     import keras_retinanet.bin  # noqa: F401
     __package__ = "keras_transformer.bin"
 
-from ..utils import helper, prepare_evaluation
+from ..utils import helper
 from ..preprocessing import dataloader as dd
 from ..utils.evaluation.e2emetrics import measure_scores
 from ..models.transformer import transformer, transformer_inference, Transformer
@@ -82,8 +82,8 @@ def main(args=None):
         print('\n\nModel not found or incompatible with network! Exiting now')
         exit(-1)
 
-    if args.create_golden:
-        prepare_evaluation.create_golden_sentences(args.valid_file, golden_file)
+    # if args.create_golden:
+    #     prepare_evaluation.create_golden_sentences(args.valid_file, golden_file)
 
     with open(args.valid_file, 'r') as fval:
         lines = fval.readlines()
