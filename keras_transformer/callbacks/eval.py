@@ -30,7 +30,8 @@ class Evaluate(keras.callbacks.Callback):
         generator,
         save_path=None,
         tensorboard=None,
-        verbose=1
+        verbose=1,
+        evaluate_metrics=None
     ):
         """ Evaluate a given dataset using a given model at the end of every epoch during training.
 
@@ -44,7 +45,7 @@ class Evaluate(keras.callbacks.Callback):
         self.save_path       = save_path
         self.tensorboard     = tensorboard
         self.verbose         = verbose
-
+        self.evaluate_metrics = evaluate_metrics
         super(Evaluate, self).__init__()
 
     def on_epoch_end(self, epoch, logs=None):
@@ -54,7 +55,8 @@ class Evaluate(keras.callbacks.Callback):
         metrics = evaluate(
             self.generator,
             self.model,
-            save_path=self.save_path
+            save_path=self.save_path,
+            evaluate_metrics=self.evaluate_metrics
         )
 
         # compute the e2e_metrics
