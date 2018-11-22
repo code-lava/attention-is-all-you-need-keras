@@ -202,7 +202,7 @@ class CSVGenerator(object):
 
 
     def preprocess_group_entry(self, source, target):
-        """ TODO (fabawi): augment the text here
+        """ TODO (fabawi): mutate the text here
         """
         # preprocess the text
 
