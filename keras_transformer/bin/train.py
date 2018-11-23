@@ -1,5 +1,6 @@
 import sys
 import argparse
+import configparser
 import os
 
 from keras.optimizers import *
@@ -17,12 +18,13 @@ if __name__ == "__main__" and __package__ is None:
 from ..models.transformer import transformer, Transformer
 from ..utils import helper
 from ..preprocessing.generator import CSVGenerator
-from keras_transformer import losses, metrics
+from ..utils.config import read_config_file, write_config_file
+from .. import losses, metrics
 
 
 class LRSchedulerPerStep(Callback):
     def __init__(self, d_model, warmup=4000):
-        self.basic = d_model ** -0.5
+        self.basic = int(d_model) ** -0.5
         self.warm = warmup ** -1.5
         self.step_num = 0
 
@@ -34,7 +36,7 @@ class LRSchedulerPerStep(Callback):
 
 class LRSchedulerPerEpoch(Callback):
     def __init__(self, d_model, warmup=4000, num_per_epoch=1000):
-        self.basic = d_model ** -0.5
+        self.basic = int(d_model) ** -0.5
         self.warm = warmup ** -1.5
         self.num_per_epoch = num_per_epoch
         self.step_num = 1
@@ -53,12 +55,16 @@ def parse_args(args):
     parser.add_argument('--dataset-name',
                         help='Name of the datset to use.',
                         default='e2e')
-    parser.add_argument('--train-file',
+    parser.add_argument('--annotations',
                         help='Path to training source and target sequences file (both separated by a tab).',
                         default='/home/abawi/PycharmProjects/THESIS/NEW/datasets/GeneratedData/TransformerMultimodalCSV/virtual/Annotations/train.csv')
-    parser.add_argument('--valid-file',
+    parser.add_argument('--val-annotations',
                         help='Path to validation source and target sequences file (both separated by a tab).',
-                        default='/home/abawi/PycharmProjects/THESIS/NEW/datasets/GeneratedData/TransformerMultimodalCSV/virtual/Annotations/train.csv')
+                        default='/home/abawi/PycharmProjects/THESIS/NEW/datasets/GeneratedData/TransformerMultimodalCSV/virtual/Annotations/test.csv')
+    parser.add_argument('--vocab',
+                        help='Load an already existing vocabulary file (optional).',
+                        default='/home/abawi/PycharmProjects/THESIS/NEW/datasets/GeneratedData/TransformerMultimodalCSV/virtual/Annotations/vocab.lst')
+
     parser.add_argument('--id',
                         help='The unique identifier for the current run.',
                         default=119)
@@ -68,19 +74,27 @@ def parse_args(args):
     parser.add_argument('--logging-dir',
                         help='The logging directory.',
                         default='../../results')
+    parser.add_argument('--config',
+                        help='The configuration file.',
+                        default='config.ini')
 
     parser.add_argument('--batch-size', help='The size of a single batch.', default=64)
     parser.add_argument('--epochs', help='Number of epochs.', default=30)
     parser.add_argument('--steps', help='Number of steps per epoch.', default=10)
 
+
     return parser.parse_args(args)
 
 
-def main(args=None, configs=None):
+def main(args=None):
     # parse arguments
     if args is None:
         args = sys.argv[1:]
     args = parse_args(args)
+
+    configs = configparser.ConfigParser()
+    if args.config is not None:
+        configs = read_config_file(args.config)
 
     snapshot_path = helper.make_dir(
         os.path.join(args.snapshot_dir, str(args.id))) + os.sep + '_' + args.dataset_name
@@ -90,25 +104,25 @@ def main(args=None, configs=None):
 
     # store the args and configs
     helper.store_settings(store_object=args, json_file=snapshot_path + '.args')
-    helper.store_settings(store_object=configs, json_file=snapshot_path + '.configs')
+    write_config_file(configs,  snapshot_path + '.ini')
 
-    train_generator = CSVGenerator(args.train_file, batch_size=args.batch_size, tokens_file=snapshot_path + '_word.txt')
+    train_generator = CSVGenerator(args.annotations, batch_size=args.batch_size, tokens_file=args.vocab)
     i_tokens = train_generator.i_tokens
     o_tokens = train_generator.o_tokens
 
-    validation_generator = CSVGenerator(args.valid_file, i_tokens=i_tokens, o_tokens=o_tokens, batch_size=args.batch_size)
-
+    validation_generator = CSVGenerator(args.val_annotations, i_tokens=i_tokens, o_tokens=o_tokens, batch_size=args.batch_size)
 
     print('seq 1 words:', i_tokens.num())
     print('seq 2 words:', o_tokens.num())
 
-    s2s = Transformer(i_tokens, o_tokens, **configs['transformer']['init'])
+    s2s = Transformer(i_tokens, o_tokens, **configs['init'])
     training_model = transformer(inputs=None, transformer_structure=s2s)
-    lr_scheduler = LRSchedulerPerStep(configs['transformer']['init']['d_model'], 4000)
+    lr_scheduler = LRSchedulerPerStep(configs['init']['d_model'], 4000)
 
     training_model.compile(
-        loss={'transformer_classification': losses.masked_ce(layer_size=configs['transformer']['init']['len_limit'])},
-        optimizer=deserialize(configs['transformer']['optimizer']))
+        loss={'transformer_classification': losses.masked_ce(layer_size=int(configs['init']['len_limit']))},
+        optimizer=deserialize({'class_name': configs['optimizer']['class_name'],
+                               'config':eval(configs['optimizer']['config'])}))
 
     model_saver = ModelCheckpoint(mfile, save_best_only=True, save_weights_only=True)
     csv_logger = CSVLogger(result_path + '.log', append=True)
@@ -127,46 +141,5 @@ def main(args=None, configs=None):
 
 
 if __name__ == '__main__':
-    configs = {
-        'transformer': {
-            'init': {
-                'len_limit': 100,
-                'd_model': 256,
-                'd_inner_hid': 512,
-                'n_head': 4,
-                'd_k': 64,
-                'd_v': 64,
-                'layers': 2,
-                'dropout': 0.1,
-                'context_alignment_emb': False,
-                'share_word_emb': False,
-                'dilation': False,
-                'dilation_rate': 3,
-                'dilation_mode': 'non-linear',
-                'dilation_layers': 6
-            },
-            'optimizer': {
-                'class_name': 'adam',
-                'config': {
-                    'lr': 0.001,
-                    'beta_1': 0.9,
-                    'beta_2': 0.98,
-                    'epsilon': 1e-9,
-                    'decay': 0.,
-                    'amsgrad': False
-                }
-            }
-        },
-        's2srnn': {
-            'init': {
-                'latent_dim': 256,
-                'layers': 3,
-            },
-            'optimizer': {
-                'class_name': 'rmsprop',
-                'config': {}
-            }
-        }
-    }
 
-    main(args=None, configs=configs)
+    main(args=None)

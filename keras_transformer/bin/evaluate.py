@@ -70,7 +70,7 @@ def main(args=None):
 
     i_tokens, o_tokens = dd.make_s2s_dict(None, dict_file=snapshot_path + '_word.txt')
 
-    s2s = Transformer(i_tokens, o_tokens,**configs['transformer']['init'])
+    s2s = Transformer(i_tokens, o_tokens,**configs['init'])
     model = transformer(inputs=None, transformer_structure=s2s)
     model = transformer_inference(model)
     try:
@@ -101,7 +101,7 @@ def main(args=None):
                         input_seq=padded_line,
                         i_tokens=i_tokens,
                         o_tokens=o_tokens,
-                        len_limit=configs['transformer']['init']['len_limit'],
+                        len_limit=int(configs['init']['len_limit']),
                         topk=args.beam_width,
                         delimiter=' ')
                     for x, y in rets:
@@ -113,7 +113,7 @@ def main(args=None):
                                            input_seq=padded_line,
                                            i_tokens=i_tokens,
                                            o_tokens=o_tokens,
-                                           len_limit=configs['transformer']['init']['len_limit'])
+                                           len_limit=int(configs['init']['len_limit']))
                     outputs.append(ret)
             prev_line = line_raw[0]
 
