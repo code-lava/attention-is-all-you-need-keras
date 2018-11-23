@@ -105,9 +105,9 @@ def _beam_search(model, input_seq, i_tokens, o_tokens, len_limit, topk=5, delimi
     return final_results
 
 
-def evaluate(generator, model, beam_search=False, beam_width=5, evaluate_metrics=None, save_path=None):
+def evaluate(generator, model, beam_search=False, beam_width=5, evaluate_metrics=False, save_path=None):
     outputs = []
-    for i in progressbar.progressbar(range(generator.size()), prefix='Running Transformer network: '):
+    for i in progressbar.progressbar(range(generator.size()), prefix='Running Transformer evaluation network: '):
         padded_line = generator.get_source_sequence(i)
         if beam_search:
             rets = _beam_search(
@@ -119,7 +119,7 @@ def evaluate(generator, model, beam_search=False, beam_width=5, evaluate_metrics
                 topk=beam_width,
                 delimiter=' ')
             for x, y in rets:
-                print(x)
+                # print(x)
                 outputs.append(x)
                 break
         else:
@@ -130,22 +130,22 @@ def evaluate(generator, model, beam_search=False, beam_width=5, evaluate_metrics
                 o_tokens=generator.o_tokens,
                 len_limit=generator.sequence_max_length,
                 delimiter=' ')
-            print(rets)
+            # print(rets)
             outputs.append(rets)
 
     if evaluate_metrics:
-        with open(save_path, 'w') as fbase:
+        baseline_file = os.path.join(save_path, 'transformer_predictions.txt')
+        with open(baseline_file, 'w') as fbase:
             for output in outputs:
                 fbase.write("%s\n" % output)
         del outputs
 
-        baseline_file = save_path
         golden_file = generator.golden_data_file
         data_src, data_ref, data_sys = measure_scores.load_data(golden_file, baseline_file, None)
         measure_names, scores = measure_scores.evaluate(data_src, data_ref, data_sys)
-        print(scores)
+        # print(scores)
 
         return scores
     else:
-
-        return 0
+        del outputs
+        return {}

@@ -31,7 +31,7 @@ class Evaluate(keras.callbacks.Callback):
         save_path=None,
         tensorboard=None,
         verbose=1,
-        evaluate_metrics=None
+        evaluate_metrics=False
     ):
         """ Evaluate a given dataset using a given model at the end of every epoch during training.
 
@@ -64,14 +64,15 @@ class Evaluate(keras.callbacks.Callback):
         if self.tensorboard is not None and self.tensorboard.writer is not None:
             import tensorflow as tf
             summary = tf.Summary()
-            # TODO (fabawi): add metrics to tensorboard
-            # summary_value = summary.value.add()
-            # summary_value.simple_value = cross_entropy
-            # summary_value.tag = "cross_entropy"
-            # self.tensorboard.writer.add_summary(summary, epoch)
+            for key, value in metrics.items():
+                summary_value = summary.value.add()
+                summary_value.simple_value = value
+                summary_value.tag = key
+                self.tensorboard.writer.add_summary(summary, epoch)
 
-
-        logs['metrics'] = metrics
+        if self.evaluate_metrics:
+            for key, value in metrics.items():
+                logs[key] = value
 
         if self.verbose == 1:
             print('metrics: ', metrics)
