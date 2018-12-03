@@ -52,35 +52,22 @@ def parse_args(args):
 
     parser = argparse.ArgumentParser(description='Simple training script for a Transformer network.')
 
-    parser.add_argument('--dataset-name',
-                        help='Name of the datset to use.',
-                        default='e2e')
-    parser.add_argument('--annotations',
-                        help='Path to training source and target sequences file (both separated by a tab).',
-                        default='/home/abawi/PycharmProjects/THESIS/NEW/datasets/GeneratedData/TransformerMultimodalCSV/virtual/Annotations/train.csv')
+    parser.add_argument('annotations',
+                        help='Path to training source and target sequences file (both separated by a tab).')
     parser.add_argument('--val-annotations',
-                        help='Path to validation source and target sequences file (both separated by a tab).',
-                        default='/home/abawi/PycharmProjects/THESIS/NEW/datasets/GeneratedData/TransformerMultimodalCSV/virtual/Annotations/test.csv')
+                        help='Path to validation source and target sequences file (both separated by a tab).')
     parser.add_argument('--vocab',
-                        help='Load an already existing vocabulary file (optional).',
-                        default='/home/abawi/PycharmProjects/THESIS/NEW/datasets/GeneratedData/TransformerMultimodalCSV/virtual/Annotations/vocab.lst')
+                        help='Load an already existing vocabulary file (optional).')
 
-    parser.add_argument('--id',
-                        help='The unique identifier for the current run.',
-                        default=119)
-    parser.add_argument('--snapshot-dir',
-                        help='The snapshot directory.',
-                        default='../../snapshots')
-    parser.add_argument('--logging-dir',
-                        help='The logging directory.',
-                        default='../../results')
+    parser.add_argument('--snapshot-path', help='The snapshot directory.', default='../../snapshots')
+    parser.add_argument('--log-path',
+                        help='The logging directory.', default='../../results')
     parser.add_argument('--config',
-                        help='The configuration file.',
-                        default='config.ini')
+                        help='The configuration file.', default='config.ini')
 
     parser.add_argument('--batch-size', help='The size of a single batch.', default=64)
     parser.add_argument('--epochs', help='Number of epochs.', default=30)
-    parser.add_argument('--steps', help='Number of steps per epoch.', default=10)
+    parser.add_argument('--steps', help='Number of steps per epoch.', type=int, default=None)
 
 
     return parser.parse_args(args)
@@ -96,21 +83,29 @@ def main(args=None):
     if args.config is not None:
         configs = read_config_file(args.config)
 
-    snapshot_path = helper.make_dir(
-        os.path.join(args.snapshot_dir, str(args.id))) + os.sep + '_' + args.dataset_name
-    result_path = helper.make_dir(
-        os.path.join(args.logging_dir, str(args.id))) + os.sep + '_' + args.dataset_name
-    mfile = snapshot_path + '.model.h5'
+    snapshot_path = helper.make_dir(args.snapshot_path)
+    result_path = helper.make_dir(args.log_path)
+    mfile = snapshot_path + 'transformer.h5'
 
     # store the args and configs
-    helper.store_settings(store_object=args, json_file=snapshot_path + '.args')
-    write_config_file(configs,  snapshot_path + '.ini')
+    helper.store_settings(store_object=args, json_file=snapshot_path + 'script_arguments.args')
+    write_config_file(configs,  snapshot_path + 'config.ini')
 
     train_generator = CSVGenerator(args.annotations, batch_size=args.batch_size, tokens_file=args.vocab)
     i_tokens = train_generator.i_tokens
     o_tokens = train_generator.o_tokens
 
-    validation_generator = CSVGenerator(args.val_annotations, i_tokens=i_tokens, o_tokens=o_tokens, batch_size=args.batch_size)
+    if args.val_annotations:
+        validation_generator = CSVGenerator(args.val_annotations, i_tokens=i_tokens, o_tokens=o_tokens, batch_size=args.batch_size)
+        val_size = validation_generator.size()
+    else:
+        validation_generator = None
+        val_size = None
+
+    if args.steps is not None:
+        train_size = args.steps
+    else:
+        train_size = train_generator.size()
 
     print('seq 1 words:', i_tokens.num())
     print('seq 2 words:', o_tokens.num())
@@ -125,19 +120,19 @@ def main(args=None):
                                'config':eval(configs['optimizer']['config'])}))
 
     model_saver = ModelCheckpoint(mfile, save_best_only=True, save_weights_only=True)
-    csv_logger = CSVLogger(result_path + '.log', append=True)
+    csv_logger = CSVLogger(result_path + 'results.csv', append=True)
 
     training_model.summary()
-    plot_model(training_model, to_file=snapshot_path + '.png', show_shapes=True, show_layer_names=True)
+    plot_model(training_model, to_file=snapshot_path + 'architecture.png', show_shapes=True, show_layer_names=True)
 
     try:
         training_model.load_weights(mfile)
     except:
         print('\n\nnew model')
 
-    training_model.fit_generator(train_generator, epochs=args.epochs, shuffle=False, steps_per_epoch=args.steps,
+    training_model.fit_generator(train_generator, epochs=args.epochs, shuffle=False, steps_per_epoch=train_size,
                                  callbacks=[lr_scheduler, model_saver, csv_logger],
-                                 validation_data=validation_generator, validation_steps=validation_generator.size())
+                                 validation_data=validation_generator, validation_steps=val_size)
 
 
 if __name__ == '__main__':

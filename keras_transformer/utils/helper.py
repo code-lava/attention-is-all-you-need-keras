@@ -5,6 +5,7 @@ import numpy as np
 def make_dir(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
+    directory += os.sep if not directory[-1] == os.sep else ''
     return directory
 
 # TODO (fabawi) replace with configparser and move to config.py

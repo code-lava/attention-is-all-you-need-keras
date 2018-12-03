@@ -12,7 +12,7 @@ from ..utils import helper
 from ..preprocessing import dataloader as dd
 from ..models.transformer import transformer, transformer_inference, Transformer
 from ..utils.eval import _beam_search, _decode_sequence
-
+from ..utils.config import read_config_file
 
 def parse_args(args):
     """ Parse the arguments.
@@ -20,15 +20,9 @@ def parse_args(args):
 
     parser = argparse.ArgumentParser(description='Simple generation script for a Transformer network.')
 
-    parser.add_argument('--dataset-name',
-                        help='Name of the datset to use e.g. [e2e, wmt]',
-                        default='e2e')
-    parser.add_argument('--id',
-                        help='The unique identifier for the current run.',
-                        default=119)
-    parser.add_argument('--snapshot-dir',
-                        help='The snapshot directory.',
-                        default='../../snapshots')
+    parser.add_argument('snapshot', help='Resume training from a snapshot.')
+    parser.add_argument('vocab', help='Load an already existing vocabulary file.')
+    parser.add_argument('--config', help='The configuration file.', default='config.ini')
 
     return parser.parse_args(args)
 
@@ -39,19 +33,17 @@ def main(args=None):
         args = sys.argv[1:]
     args = parse_args(args)
 
-    snapshot_path = helper.make_dir(os.path.join(args.snapshot_dir, str(args.id))) + \
-                    os.sep + '_' + args.dataset_name
-    mfile = snapshot_path + '.model.h5'
-
+    mfile = args.snapshot
+    print(mfile)
     # load configs
-    configs = helper.load_settings(json_file=snapshot_path + '.configs')
+    configs = read_config_file(args.config)
 
-    i_tokens, o_tokens = dd.make_s2s_dict(None, dict_file=snapshot_path + '_word.txt')
+    i_tokens, o_tokens = dd.make_s2s_dict(None, dict_file=args.vocab)
 
 
-    s2s = Transformer(i_tokens, o_tokens,**configs['transformer']['init'])
+    s2s = Transformer(i_tokens, o_tokens,**configs['init'])
     model = transformer(inputs=None, transformer_structure=s2s)
-    model = transformer_inference(model)
+    # model = transformer_inference(model)
     try:
         model.load_weights(mfile)
         model.compile('adam', 'mse')
@@ -60,26 +52,28 @@ def main(args=None):
         exit(-1)
 
     start = time.clock()
-    padded_line = helper.parenthesis_split('name[Alimentum] , area[city centre] , familyFriendly[yes] , near[Burger King]',
+    padded_line = helper.parenthesis_split('Move the red cube on top of the blue cube',
                              delimiter=" ", lparen="[", rparen="]")
 
     ret = _decode_sequence(model=model,
                            input_seq=padded_line,
                            i_tokens=i_tokens,
                            o_tokens=o_tokens,
-                           len_limit=configs['transformer']['init']['len_limit'])
+                           len_limit=int(configs['init']['len_limit']))
     end = time.clock()
     print("Time per sequence: {} ".format((end - start)))
     print(ret)
     while True:
         quest = input('> ')
+        padded_line = helper.parenthesis_split(quest,
+                                               delimiter=" ", lparen="[", rparen="]")
         rets = _beam_search(
             model=model,
             input_seq=padded_line,
             i_tokens=i_tokens,
             o_tokens=o_tokens,
-            len_limit=configs['transformer']['init']['len_limit'],
-            topk=10,
+            len_limit=int(configs['init']['len_limit']),
+            topk=1,
             delimiter=' ')
         for x, y in rets:
             print(x, y)

@@ -1,6 +1,7 @@
 import sys
 import argparse
 from os.path import basename, splitext
+from tqdm import tqdm
 
 from keras.callbacks import *
 
@@ -14,6 +15,7 @@ from ..preprocessing import dataloader as dd
 from ..utils.evaluation.e2emetrics import measure_scores
 from ..models.transformer import transformer, transformer_inference, Transformer
 from ..utils.eval import _beam_search, _decode_sequence
+from ..utils.config import read_config_file
 
 def parse_args(args):
     """ Parse the arguments.
@@ -21,32 +23,28 @@ def parse_args(args):
 
     parser = argparse.ArgumentParser(description='Evaluation script which generates sentences and then evaluates using metrics: BLEU, NIST, ROUGE,_L, CIDEr, METEOR.')
 
-    parser.add_argument('--dataset-name',
-                        help='Name of the datset to use.',
-                        default='e2e')
-    parser.add_argument('--valid-file',
-                        help='Path to validation source and target sequences file (both separated by a tab).',
-                        default='../data/e2e/devset.txt')
+    parser.add_argument('snapshot', help ='Resume training from a snapshot.')
+    parser.add_argument('val_annotations', help='Path to validation source and target sequences file (both separated by a tab).')
+    parser.add_argument('--val-golden-set', help='Path to the human annotated golden set for validation.')
+    parser.add_argument('vocab', help='Load an already existing vocabulary file (optional).')
     parser.add_argument('--evaluate-metrics',
-                        help='If set to true, will evaluate on e2e-metrics and saves the output results.',
-                        default=True)
+                        help='If set to true, will evaluate on e2e-metrics and saves the output results.', action='store_true',
+                        default=False)
     parser.add_argument('--generate',
-                        help='Generates and saves the output sentence to the snapshot directory.',
-                        default=True)
+                        help='Generates and saves the output sentence to the snapshot directory.', action='store_true',
+                        default=False)
     parser.add_argument('--beam-search',
-                        help='If set to true,returns the best beam search output.',
-                        default=True)
+                        help='If set to true,returns the best beam search output.', action='store_true',
+                        default=False)
     parser.add_argument('--beam-width',
                         help='Size of the beam width if beam search is used.',
-                        default=10)
-
-    parser.add_argument('--id',
-                        help='The unique identifier for the current run.',
-                        default=119)
-    parser.add_argument('--snapshot-dir',
-                        help='The snapshot directory.',
-                        default='../../snapshots')
-    parser.add_argument('--logging-dir',
+                        default=5)
+    parser.add_argument('--verbose',
+                        help='Setting the verbosity flag prints the output.', action='store_true',
+                        default=False)
+    parser.add_argument('--config',
+                        help='The configuration file.', default='config.ini')
+    parser.add_argument('--log-path',
                         help='The logging directory.',
                         default='../../results')
 
@@ -59,20 +57,18 @@ def main(args=None):
         args = sys.argv[1:]
     args = parse_args(args)
 
-    snapshot_path = helper.make_dir(os.path.join(args.snapshot_dir, str(args.id))) + os.sep + '_' + args.dataset_name
-    result_path = helper.make_dir(os.path.join(args.logging_dir, str(args.id))) + os.sep +  '_' + args.dataset_name
-    mfile = snapshot_path + '.model.h5'
-    golden_file = args.valid_file[0:args.valid_file.rindex('.')] + '.metric_golden.txt'
-    baseline_file = snapshot_path + '.metric_baseline.txt'
+    result_path = helper.make_dir(args.log_path)
+    mfile = args.snapshot
+    baseline_file = result_path + 'prediction.txt'
 
     # load configs
-    configs = helper.load_settings(json_file=snapshot_path + '.configs')
+    configs = read_config_file(args.config)
 
-    i_tokens, o_tokens = dd.make_s2s_dict(None, dict_file=snapshot_path + '_word.txt')
+    i_tokens, o_tokens = dd.make_s2s_dict(None, dict_file=args.vocab)
 
     s2s = Transformer(i_tokens, o_tokens,**configs['init'])
     model = transformer(inputs=None, transformer_structure=s2s)
-    model = transformer_inference(model)
+    # model = transformer_inference(model)
     try:
         model.load_weights(mfile)
         model.compile('adam', 'mse')
@@ -85,37 +81,36 @@ def main(args=None):
     # if args.create_golden:
     #     prepare_evaluation.create_golden_sentences(args.valid_file, golden_file)
 
-    with open(args.valid_file, 'r') as fval:
+    with open(args.val_annotations, 'r') as fval:
         lines = fval.readlines()
 
     if args.generate:
         outputs = []
-        prev_line = ''
-        for line_raw_index, line_raw in enumerate(lines):
+        next(lines) # skip the first line
+        for line_raw in tqdm(lines, mininterval=2, desc='  - (Test)', leave=False):
             line_raw = line_raw.split('\t')
-            if prev_line != line_raw[0]:
-                padded_line = helper.parenthesis_split(line_raw[0], delimiter=' ', lparen="[", rparen="]")
-                if args.beam_search:
-                    rets = _beam_search(
-                        model=model,
-                        input_seq=padded_line,
-                        i_tokens=i_tokens,
-                        o_tokens=o_tokens,
-                        len_limit=int(configs['init']['len_limit']),
-                        topk=args.beam_width,
-                        delimiter=' ')
-                    for x, y in rets:
+            padded_line = helper.parenthesis_split(line_raw[0], delimiter=' ', lparen="[", rparen="]")
+            if args.beam_search:
+                rets = _beam_search(
+                    model=model,
+                    input_seq=padded_line,
+                    i_tokens=i_tokens,
+                    o_tokens=o_tokens,
+                    len_limit=int(configs['init']['len_limit']),
+                    topk=args.beam_width,
+                    delimiter=' ')
+                for x, y in rets:
+                    if args.verbose:
                         print(x)
-                        outputs.append(x)
-                        break
-                else:
-                    ret = _decode_sequence(model=model,
-                                           input_seq=padded_line,
-                                           i_tokens=i_tokens,
-                                           o_tokens=o_tokens,
-                                           len_limit=int(configs['init']['len_limit']))
-                    outputs.append(ret)
-            prev_line = line_raw[0]
+                    outputs.append(x)
+                    break
+            else:
+                ret = _decode_sequence(model=model,
+                                       input_seq=padded_line,
+                                       i_tokens=i_tokens,
+                                       o_tokens=o_tokens,
+                                       len_limit=int(configs['init']['len_limit']))
+                outputs.append(ret)
 
         with open(baseline_file, 'w') as fbase:
             for output in outputs:
@@ -123,16 +118,11 @@ def main(args=None):
         del outputs
 
     if args.evaluate_metrics:
+        golden_file = args.val_golden_set
         data_src, data_ref, data_sys = measure_scores.load_data(golden_file, baseline_file, None)
         measure_names, scores = measure_scores.evaluate(data_src, data_ref, data_sys)
         print(scores)
-
-        if args.beam_search:
-            search_method = 'beamsrch'
-        else:
-            search_method = 'greedy'
-        valid_name = splitext(basename(args.valid_file))[0]
-        helper.store_settings(scores.__repr__(), result_path + '_' + search_method + '_' + valid_name + '.metric_eval')
+        helper.store_settings(scores.__repr__(), result_path + 'metric_results.txt')
 
 
 if __name__ == '__main__':
