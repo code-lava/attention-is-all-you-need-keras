@@ -3,7 +3,7 @@ assert(callable(progressbar.progressbar)), "Using wrong progressbar module, inst
 
 from keras.callbacks import *
 
-from ..utils.evaluation.e2emetrics import measure_scores
+from e2emetrics import measure_scores
 
 # TODO (fabawi): Might need to integrate fast decoders, although the difference is not that huge (keep it in mind)
 # def make_fast_decode_model(self):
