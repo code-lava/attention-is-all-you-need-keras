@@ -4,6 +4,7 @@ from keras.callbacks import *
 from keras.initializers import *
 import tensorflow as tf
 
+from keras_transformer.utils.helper import input_2_bool
 
 class LayerNormalization(Layer):
     def __init__(self, eps=1e-6, **kwargs):
@@ -272,16 +273,6 @@ class Decoder():
         return (x, self_atts, enc_atts) if return_att else x
 
 
-def str_2_bool(string):
-    if isinstance(string, str):
-        if 'True' in string or 'true' in string:
-            return True
-        else:
-            return False
-    else:
-        return string
-
-
 class Transformer:
     def __init__(self, i_tokens, o_tokens, len_limit=100, d_model=256,
                  d_inner_hid=512, n_head=4, d_k=64, d_v=64, layers=2, dropout=0.1,
@@ -294,8 +285,8 @@ class Transformer:
         d_v = int(d_v)
         layers = int(layers)
         dropout = float(dropout)
-        share_word_emb = str_2_bool(share_word_emb)
-        dilation = str_2_bool(dilation)
+        share_word_emb = input_2_bool(share_word_emb)
+        dilation = input_2_bool(dilation)
         if 'dilation_rate' in dilation_properties:
             dilation_properties['dilation_rate'] = int(dilation_properties['dilation_rate'])
         if 'dilation_layers' in dilation_properties:

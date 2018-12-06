@@ -85,6 +85,23 @@ def pad_to_longest(xs, tokens, max_len=999):
     return X
 
 
+def input_2_bool(input_element):
+    if isinstance(input_element, str):
+        if input_element in ["True", "true", "1", "t", "T"]:
+            return True
+        else:
+            return False
+    elif isinstance(input_element, bool):
+        return input_element
+    elif isinstance(input_element, int) or isinstance(input_element, float):
+        if input_element >= 1:
+            return True
+        else:
+            return False
+    else:
+        return False
+
+
 def parenthesis_split(sentence, delimiter=" ", lparen="[", rparen="]"):
     nb_brackets=0
     sentence = sentence.strip(delimiter) # get rid of leading/trailing seps
@@ -106,6 +123,7 @@ def parenthesis_split(sentence, delimiter=" ", lparen="[", rparen="]"):
     if nb_brackets>0:
         raise Exception("Syntax error")
     return([sentence[i:j].strip(delimiter) for i,j in zip(l,l[1:])])
+
 
 def freq_dict_2_list(dt):
     return sorted(dt.items(), key=lambda d: d[-1], reverse=True)
