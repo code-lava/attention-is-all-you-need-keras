@@ -45,8 +45,8 @@ def parse_args(args):
     parser.add_argument('--config',
                         help='The configuration file.', default='config.ini')
     parser.add_argument('--log-path',
-                        help='The logging directory.',
-                        default='../../results')
+                        help='The logging directory including.',
+                        default='../../log')
 
     return parser.parse_args(args)
 

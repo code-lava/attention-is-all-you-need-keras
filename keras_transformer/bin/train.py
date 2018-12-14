@@ -11,7 +11,7 @@ from keras.utils.vis_utils import plot_model
 # Allow relative imports when being executed as script.
 if __name__ == "__main__" and __package__ is None:
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
-    import keras_retinanet.bin  # noqa: F401
+    import keras_transformer.bin  # noqa: F401
 
     __package__ = "keras_transformer.bin"
 
