@@ -5,7 +5,7 @@
     <mapping directory="$PROJECT_DIR$/documents/MasterThesis-Documents" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/documents/MasterThesis-Presentations" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/libraries/E2Emetrics-0.1/e2emetrics" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/sources/language_translation/transformer" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/sources/vision_object_detection/retinanet" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/modules/language_translation/transformer" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/modules/vision_object_detection/retinanet" vcs="Git" />
   </component>
 </project>
