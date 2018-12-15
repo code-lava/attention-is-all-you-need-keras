@@ -1,0 +1,8 @@
+six
+scipy
+cython
+Pillow
+jsonpickle
+numpy
+tqdm
+pydot

@@ -365,6 +365,7 @@ def transformer(transformer_structure, inputs=None, active_layers=999, sublayers
         final_output = []
         for sublayer_name, sublayer in sublayers.items():
             final_output.append(sublayer(dec_output))
+
     else:
         final_output = default_classification_layer(transformer_structure.o_tokens.num())(dec_output)
 
