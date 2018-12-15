@@ -91,7 +91,7 @@ def main(args=None):
     helper.store_settings(store_object=args, json_file=snapshot_path + 'script_arguments.args')
     write_config_file(configs,  snapshot_path + 'config.ini')
 
-    train_generator = CSVGenerator(args.annotations, batch_size=args.batch_size, tokens_file=args.vocab)
+    train_generator = CSVGenerator(args.annotations, batch_size=args.batch_size, tokens_file=args.vocab, sequence_max_length=int(configs['init']['len_limit']))
     i_tokens = train_generator.i_tokens
     o_tokens = train_generator.o_tokens
 
@@ -111,7 +111,7 @@ def main(args=None):
     print('seq 2 words:', o_tokens.num())
 
     s2s = Transformer(i_tokens, o_tokens, **configs['init'])
-    training_model = transformer(inputs=None, transformer_structure=s2s)
+    training_model = transformer(transformer_structure=s2s, inputs=None)
     lr_scheduler = LRSchedulerPerStep(configs['init']['d_model'], 4000)
 
     training_model.compile(

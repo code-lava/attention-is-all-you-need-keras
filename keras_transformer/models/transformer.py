@@ -345,6 +345,9 @@ def transformer(transformer_structure, inputs=None, active_layers=999, sublayers
     if inputs is None:
         src_seq_input = Input(shape=(None,), dtype='int32')
         tgt_seq_input = Input(shape=(None,), dtype='int32')
+    elif isinstance(inputs[0], int) and isinstance(inputs[1], int):
+        src_seq_input = Input(shape=(inputs[0],), dtype='int32')
+        tgt_seq_input = Input(shape=(inputs[1],), dtype='int32')
     else:
         src_seq_input = inputs[0]
         tgt_seq_input = inputs[1]
