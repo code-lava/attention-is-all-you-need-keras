@@ -30,6 +30,7 @@ class Evaluate(keras.callbacks.Callback):
         generator,
         save_path=None,
         tensorboard=None,
+        comet=None,
         verbose=1,
         evaluate_metrics=False
     ):
@@ -44,6 +45,7 @@ class Evaluate(keras.callbacks.Callback):
         self.generator       = generator
         self.save_path       = save_path
         self.tensorboard     = tensorboard
+        self.comet           = comet
         self.verbose         = verbose
         self.evaluate_metrics = evaluate_metrics
         super(Evaluate, self).__init__()
@@ -69,6 +71,9 @@ class Evaluate(keras.callbacks.Callback):
                 summary_value.simple_value = value
                 summary_value.tag = key
                 self.tensorboard.writer.add_summary(summary, epoch)
+        if self.comet is not None:
+            for key, value in metrics.items():
+                self.comet.log_metric('transformer_'+key, value)
 
         if self.evaluate_metrics:
             for key, value in metrics.items():
