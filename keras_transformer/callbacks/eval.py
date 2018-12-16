@@ -73,7 +73,7 @@ class Evaluate(keras.callbacks.Callback):
                 self.tensorboard.writer.add_summary(summary, epoch)
         if self.comet is not None:
             for key, value in metrics.items():
-                self.comet.log_metric('val_transformer_'+key, value)
+                self.comet.log_metric('val_transformer_'+key, value, epoch)
 
         if self.evaluate_metrics:
             for key, value in metrics.items():
