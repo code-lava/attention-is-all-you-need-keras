@@ -1,1 +1,11 @@
 *.h5
+.DS_Store
+*.pyc
+*.pyo
+build
+MANIFEST
+dist
+*.swp
+.idea
+*.egg-info
+.venv
