@@ -363,8 +363,8 @@ def transformer(transformer_structure, inputs=None, active_layers=999, sublayers
     dec_output = transformer_structure.decoder(tgt_seq, tgt_pos, src_seq, enc_output, active_layers=active_layers)
     if sublayers is not None:
         final_output = []
-        for sublayer_name, sublayer in sublayers.items():
-            final_output.append(sublayer(dec_output))
+        for sublayer in sublayers:
+            final_output.append(sublayer[1](dec_output))
 
     else:
         final_output = default_classification_layer(transformer_structure.o_tokens.num())(dec_output)
