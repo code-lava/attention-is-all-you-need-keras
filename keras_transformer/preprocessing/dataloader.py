@@ -22,7 +22,7 @@ class TokenList:
 
 
 
-def make_s2s_dict(fn=None, min_freq=5, delimiter=' ',lparen="[", rparen="]", dict_file=None):
+def make_s2s_dict(fn=None, min_freq=5, delimiter=' ',lparen="[", rparen="]", dict_file=None, store_target_only=False):
     if dict_file is not None and os.path.exists(dict_file):
         print('loading', dict_file)
         lst = helper.load_list(dict_file)
@@ -46,7 +46,10 @@ def make_s2s_dict(fn=None, min_freq=5, delimiter=' ',lparen="[", rparen="]", dic
     itokens = TokenList(wlists[0])
     otokens = TokenList(wlists[1])
     if dict_file is not None:
-        helper.store_list(wlists[0] + ['<@@@>'] + wlists[1], dict_file)
+        if store_target_only:
+            helper.store_list(['<@@@>'] + wlists[1], dict_file)
+        else:
+            helper.store_list(wlists[0] + ['<@@@>'] + wlists[1], dict_file)
     return itokens, otokens
 
 
