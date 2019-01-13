@@ -3,8 +3,6 @@ assert(callable(progressbar.progressbar)), "Using wrong progressbar module, inst
 
 from keras.callbacks import *
 
-from e2emetrics import measure_scores
-
 # TODO (fabawi): Might need to integrate fast decoders, although the difference is not that huge (keep it in mind)
 # def make_fast_decode_model(self):
 #     src_seq_input = Input(shape=(None,), dtype='int32')
@@ -107,47 +105,38 @@ def _beam_search(model, input_seq, i_tokens, o_tokens, len_limit, topk=5, delimi
     return final_results
 
 
-def evaluate(generator, model, beam_search=False, beam_width=5, evaluate_metrics=False, save_path=None):
-    outputs = []
-    for i in progressbar.progressbar(range(generator.size()), prefix='Running Transformer evaluation network: '):
-        padded_line = generator.get_source_sequence(i)
-        if beam_search:
-            rets = _beam_search(
-                model=model,
-                input_seq=padded_line,
-                i_tokens= generator.i_tokens,
-                o_tokens=generator.o_tokens,
-                len_limit=generator.sequence_max_length,
-                topk=beam_width,
-                delimiter=' ')
-            for x, y in rets:
-                # print(x)
-                outputs.append(x)
-                break
-        else:
-            rets = _decode_sequence(
-                model=model,
-                input_seq=padded_line,
-                i_tokens=generator.i_tokens,
-                o_tokens=generator.o_tokens,
-                len_limit=generator.sequence_max_length,
-                delimiter=' ')
-            # print(rets)
-            outputs.append(rets)
+def predict(generator, model, command, beam_search=False, beam_width=5, save_path=None):
+    output_sequences = []
 
-    if evaluate_metrics:
-        baseline_file = os.path.join(save_path, 'transformer_prediction.txt')
-        with open(baseline_file, 'w') as fbase:
-            for output in outputs:
-                fbase.write("%s\n" % output)
-        del outputs
-
-        golden_file = generator.golden_data_file
-        data_src, data_ref, data_sys = measure_scores.load_data(golden_file, baseline_file, None)
-        measure_names, scores = measure_scores.evaluate(data_src, data_ref, data_sys)
-        # print(scores)
-
-        return scores
+    padded_line = generator.get_source_sequence(command=command)
+    if beam_search:
+        rets = _beam_search(
+            model=model,
+            input_seq=padded_line,
+            i_tokens= generator.i_tokens,
+            o_tokens=generator.o_tokens,
+            len_limit=generator.sequence_max_length,
+            topk=beam_width,
+            delimiter=' ')
+        for x, y in rets:
+            # print(x)
+            output_sequences.append(x)
     else:
-        del outputs
-        return {}
+        rets = _decode_sequence(
+            model=model,
+            input_seq=padded_line,
+            i_tokens=generator.i_tokens,
+            o_tokens=generator.o_tokens,
+            len_limit=generator.sequence_max_length,
+            delimiter=' ')
+        # print(rets)
+        output_sequences.append(rets)
+
+    baseline_file = os.path.join(save_path, 'transformer_predictions.txt')
+    with open(baseline_file, 'w') as fbase:
+        for output_sequence in output_sequences:
+            fbase.write("%s\n" % output_sequence)
+
+    predictions = {"output_sequences": output_sequences}
+    return predictions
+

@@ -168,8 +168,14 @@ class CSVGenerator(object):
         """
         return len(self.command_names)
 
-    def get_source_sequence(self, command_index):
-        sequence = self.command_data[self.command_names[command_index]][0]['source']
+    def get_source_sequence(self, command_index=None, command=None):
+        if command_index is not None:
+            sequence = self.command_data[self.command_names[command_index]][1]['source']
+        elif command is not None:
+            sequence = command
+        else:
+            raise_from(ValueError('provide a command_index or a command_filename. command_index takes precedence'),
+                       None)
         xs = parenthesis_split(sequence, self.delimiter, self.lparen, self.rparen)
         return xs
 
