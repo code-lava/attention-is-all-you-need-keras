@@ -113,10 +113,12 @@ class CSVGenerator(object):
                  delimiter=" ",
                  lparen='',
                  rparen='',
-                 min_word_count=1,
+                 min_word_count=3,
                  i_tokens=None,
                  o_tokens=None,
-                 tokens_file=None
+                 tokens_file=None,
+                 i_embedding_matrix_file=None,
+                 o_embedding_matrix_file=None
                  ):
 
         """ Initialize a CSV data generator.
@@ -128,7 +130,7 @@ class CSVGenerator(object):
 
         Args for generator
         """
-        self.golden_data_file = golden_data_file,
+        self.golden_data_file = golden_data_file
         self.base_dir = base_dir
 
         # take base_dir from annotations file if not explicitly specified.
@@ -162,6 +164,15 @@ class CSVGenerator(object):
             self.i_tokens, self.o_tokens = self.create_lookup_table(min_freq=min_word_count, tokens_file=tokens_file)
         self.group_sources()
 
+        self.o_embedding_matrix = None
+        self.i_embedding_matrix = None
+        if i_embedding_matrix_file is not None:
+            self.i_embedding_matrix = self.load_embedding(i_embedding_matrix_file)
+        if i_embedding_matrix_file is not None:
+            self.o_embedding_matrix = self.load_embedding(o_embedding_matrix_file)
+
+    def load_embedding(self, embedding_file):
+        return np.load(embedding_file)
 
     def size(self):
         """ Size of the dataset.

@@ -3,6 +3,7 @@ import argparse
 import configparser
 import os
 
+from comet_ml import Experiment
 from keras.optimizers import *
 from keras.losses import sparse_categorical_crossentropy
 from keras.callbacks import *
@@ -57,7 +58,11 @@ def parse_args(args):
     parser.add_argument('--val-annotations',
                         help='Path to validation source and target sequences file (both separated by a tab).')
     parser.add_argument('--vocab',
-                        help='Load an already existing vocabulary file (optional).')
+                        help='Path to vocab file. Load an already existing vocabulary file (optional).')
+    parser.add_argument('--i-embedding-matrix',
+                        help='Path to source embedding file. Load an already existing pretrained source embedding (optional).', default=None)
+    parser.add_argument('--o-embedding-matrix',
+                        help='Path to target embedding file. Load an already existing pretrained target embedding (optional).', default=None)
 
     parser.add_argument('--snapshot-path', help='The snapshot directory.', default='../../snapshots')
     parser.add_argument('--log-path',
@@ -65,9 +70,18 @@ def parse_args(args):
     parser.add_argument('--config',
                         help='The configuration file.', default='config.ini')
 
-    parser.add_argument('--batch-size', help='The size of a single batch.', default=64)
-    parser.add_argument('--epochs', help='Number of epochs.', default=30)
+    parser.add_argument('--batch-size', help='The size of a single batch.', type=int, default=64)
+    parser.add_argument('--epochs', help='Number of epochs.', type=int, default=30)
     parser.add_argument('--steps', help='Number of steps per epoch.', type=int, default=None)
+
+    parser.add_argument('--experiment-tag', help='A tag to identify the experiment by.', type=str,
+                        default='DEFAULT_EXPERIMENT_TAG')
+    parser.add_argument('--experiment-key', help='A tag to identify the experiment by.', type=str,
+                        default='DEFAULT_EXPERIMENT_KEY')
+
+    parser.add_argument('--comet-api-key', help='The comet-ml api key.', default=None)
+    parser.add_argument('--comet-project-name', help='The comet-ml project name.', type=str)
+    parser.add_argument('--comet-workspace', help='The comet-ml workspace.', type=str)
 
 
     return parser.parse_args(args)
@@ -91,12 +105,36 @@ def main(args=None):
     helper.store_settings(store_object=args, json_file=snapshot_path + 'script_arguments.args')
     write_config_file(configs,  snapshot_path + 'config.ini')
 
-    train_generator = CSVGenerator(args.annotations, batch_size=args.batch_size, tokens_file=args.vocab, sequence_max_length=int(configs['init']['len_limit']))
+    if args.comet_api_key is not None:
+        comet_experiment = Experiment(api_key=args.comet_api_key,
+                                      project_name=args.comet_project_name, workspace=args.comet_workspace)
+        comet_experiment.add_tag(args.experiment_tag)
+        comet_experiment.set_name(args.experiment_tag)
+        # get the experiment key from comet and replace the one passed throught the arguments
+        args.experiment_key = comet_experiment.get_key()
+
+        args_dict = vars(args)
+        for arg_key, arg_val in args_dict.items():
+            if isinstance(arg_val, argparse.Namespace):
+                comet_experiment.log_parameters(vars(arg_val),arg_key)
+            else:
+                comet_experiment.log_parameter(arg_key, arg_val)
+
+        # store the transformer configuration
+        arg_key = 'init'
+        comet_experiment.log_parameters(configs._sections['init'], arg_key)
+
+    train_generator = CSVGenerator(args.annotations, batch_size=args.batch_size, tokens_file=args.vocab,
+                                   i_embedding_matrix_file=args.i_embedding_matrix, o_embedding_matrix_file=args.o_embedding_matrix,
+                                   sequence_max_length=int(configs['init']['len_limit']))
     i_tokens = train_generator.i_tokens
     o_tokens = train_generator.o_tokens
+    i_embedding_matrix = train_generator.i_embedding_matrix
+    o_embedding_matrix = train_generator.o_embedding_matrix
 
     if args.val_annotations:
-        validation_generator = CSVGenerator(args.val_annotations, i_tokens=i_tokens, o_tokens=o_tokens, batch_size=args.batch_size)
+        validation_generator = CSVGenerator(args.val_annotations, batch_size=args.batch_size, i_tokens=i_tokens,
+                                            o_tokens=o_tokens, sequence_max_length=int(configs['init']['len_limit']))
         val_size = validation_generator.size()
     else:
         validation_generator = None
@@ -110,7 +148,8 @@ def main(args=None):
     print('seq 1 words:', i_tokens.num())
     print('seq 2 words:', o_tokens.num())
 
-    s2s = Transformer(i_tokens, o_tokens, **configs['init'])
+    s2s = Transformer(i_tokens, o_tokens, i_embedding_matrix=i_embedding_matrix, o_embedding_matrix=o_embedding_matrix,
+                      **configs['init'])
     training_model = transformer(transformer_structure=s2s, inputs=None)
     lr_scheduler = LRSchedulerPerStep(configs['init']['d_model'], 4000)
 

@@ -275,7 +275,7 @@ class Decoder():
 
 class Transformer:
     def __init__(self, i_tokens, o_tokens, len_limit=100, d_model=256,
-                 d_inner_hid=512, n_head=4, d_k=64, d_v=64, layers=2, dropout=0.1,
+                 d_inner_hid=512, n_head=4, d_k=64, d_v=64, layers=2, dropout=0.1, i_embedding_matrix=None, o_embedding_matrix=None,
                  share_word_emb=False, dilation=False, **dilation_properties):
         len_limit = int(len_limit)
         d_model = int(d_model)
@@ -303,12 +303,18 @@ class Transformer:
         pos_emb = Embedding(len_limit, d_emb, trainable=False,
                             weights=[get_pos_encoding_matrix(len_limit, d_emb)])
 
-        i_word_emb = Embedding(i_tokens.num(), d_emb)
+        if i_embedding_matrix is None:
+            i_word_emb = Embedding(i_tokens.num(), d_emb)
+        else:
+            i_word_emb = Embedding(i_tokens.num(), d_emb, weights=[i_embedding_matrix])
         if share_word_emb:
             assert i_tokens.num() == o_tokens.num()
             o_word_emb = i_word_emb
         else:
-            o_word_emb = Embedding(o_tokens.num(), d_emb)
+            if o_embedding_matrix is None:
+                o_word_emb = Embedding(o_tokens.num(), d_emb)
+            else:
+                o_word_emb = Embedding(o_tokens.num(), d_emb, weights=[o_embedding_matrix])
 
         self.encoder = Encoder(d_model, d_inner_hid, n_head, d_k, d_v, layers, dropout,
                                word_emb=i_word_emb, pos_emb=pos_emb, dilation=dilation, **dilation_properties)

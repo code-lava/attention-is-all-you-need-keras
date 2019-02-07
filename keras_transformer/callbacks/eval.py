@@ -32,6 +32,8 @@ class Evaluate(keras.callbacks.Callback):
         tensorboard=None,
         comet=None,
         verbose=1,
+        beam_search=False,
+        beam_width=5,
         evaluate_metrics=False
     ):
         """ Evaluate a given dataset using a given model at the end of every epoch during training.
@@ -47,6 +49,8 @@ class Evaluate(keras.callbacks.Callback):
         self.tensorboard     = tensorboard
         self.comet           = comet
         self.verbose         = verbose
+        self.beam_search = beam_search
+        self.beam_width = beam_width
         self.evaluate_metrics = evaluate_metrics
         super(Evaluate, self).__init__()
 
@@ -57,6 +61,8 @@ class Evaluate(keras.callbacks.Callback):
         metrics = evaluate(
             self.generator,
             self.model,
+            beam_search=self.beam_search,
+            beam_width=self.beam_width,
             save_path=self.save_path,
             evaluate_metrics=self.evaluate_metrics
         )

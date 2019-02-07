@@ -6,3 +6,4 @@ jsonpickle
 numpy
 tqdm
 pydot
+comet-ml
