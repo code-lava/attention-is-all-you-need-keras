@@ -43,8 +43,12 @@ from keras.callbacks import *
 #
 
 
-def _make_src_seq_matrix(input_seq, i_tokens):
-    src_seq = np.zeros((1, len(input_seq)+3), dtype='int32')
+def _make_src_seq_matrix(input_seq, i_tokens, len_limit=None):
+    if len_limit is None or len_limit <  len(input_seq)+3:
+        src_seq = np.zeros((1, len(input_seq)+3), dtype='int32')
+    else:
+        src_seq = np.zeros((1, len_limit), dtype='int32')
+
     src_seq[0, 0] = i_tokens.startid()
     for i, z in enumerate(input_seq): src_seq[0, 1 + i] = i_tokens.id(z)
     src_seq[0, len(input_seq) + 1] = i_tokens.endid()
@@ -52,10 +56,10 @@ def _make_src_seq_matrix(input_seq, i_tokens):
 
 
 def _decode_sequence(model, input_seq, i_tokens, o_tokens, len_limit, delimiter=''):
-    src_seq = _make_src_seq_matrix(input_seq, i_tokens)
+    src_seq = _make_src_seq_matrix(input_seq, i_tokens, len_limit)
     decoded_tokens = []
     target_seq = np.zeros((1, len_limit), dtype='int32')
-    target_seq[0, 0] =  o_tokens.startid()
+    target_seq[0, 0] = o_tokens.startid()
     for i in range(len_limit - 1):
         output = model.predict_on_batch([src_seq, target_seq])
         sampled_index = np.argmax(output[0, i, :])
@@ -63,11 +67,12 @@ def _decode_sequence(model, input_seq, i_tokens, o_tokens, len_limit, delimiter=
         decoded_tokens.append(sampled_token)
         if sampled_index == o_tokens.endid(): break
         target_seq[0, i + 1] = sampled_index
-    return delimiter.join(decoded_tokens[:-1])
+    processed_data = [src_seq[:, :len_limit], target_seq[:, :len_limit]]
+    return delimiter.join(decoded_tokens[:-1]), processed_data
 
 
 def _beam_search(model, input_seq, i_tokens, o_tokens, len_limit, topk=5, delimiter=''):
-    src_seq = _make_src_seq_matrix(input_seq, i_tokens)
+    src_seq = _make_src_seq_matrix(input_seq, i_tokens, len_limit)
     src_seq = src_seq.repeat(topk, 0)
 
     final_results = []
@@ -99,10 +104,11 @@ def _beam_search(model, input_seq, i_tokens, o_tokens, len_limit, topk=5, delimi
             if wid == o_tokens.endid(): final_results.append((decoded_tokens[k], wprob))
         decoded_tokens = decoded_tokens[topk:]
         lastk = len(cands)
+    processed_data = [src_seq[:, :len_limit], target_seq[:, :len_limit]]
     final_results = [(x, y / (len(x) + 1)) for x, y in final_results]
     final_results.sort(key=lambda x: x[-1], reverse=True)
     final_results = [(delimiter.join(x), y) for x, y in final_results]
-    return final_results
+    return final_results, processed_data
 
 
 def predict(generator, model, command, beam_search=False, beam_width=5, save_path=None):
@@ -110,7 +116,7 @@ def predict(generator, model, command, beam_search=False, beam_width=5, save_pat
 
     padded_line = generator.get_source_sequence(command=command)
     if beam_search:
-        rets = _beam_search(
+        rets, processed_data = _beam_search(
             model=model,
             input_seq=padded_line,
             i_tokens= generator.i_tokens,
@@ -122,7 +128,7 @@ def predict(generator, model, command, beam_search=False, beam_width=5, save_pat
             # print(x)
             output_sequences.append(x)
     else:
-        rets = _decode_sequence(
+        rets, processed_data = _decode_sequence(
             model=model,
             input_seq=padded_line,
             i_tokens=generator.i_tokens,
@@ -138,5 +144,5 @@ def predict(generator, model, command, beam_search=False, beam_width=5, save_pat
             fbase.write("%s\n" % output_sequence)
 
     predictions = {"output_sequences": output_sequences}
-    return predictions
+    return predictions, processed_data
 
