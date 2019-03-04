@@ -97,14 +97,6 @@ def main(args=None):
     if args.config is not None:
         configs = read_config_file(args.config)
 
-    snapshot_path = helper.make_dir(args.snapshot_path)
-    result_path = helper.make_dir(args.log_path)
-    mfile = snapshot_path + 'transformer.h5'
-
-    # store the args and configs
-    helper.store_settings(store_object=args, json_file=snapshot_path + 'script_arguments.args')
-    write_config_file(configs,  snapshot_path + 'config.ini')
-
     if args.comet_api_key is not None:
         comet_experiment = Experiment(api_key=args.comet_api_key,
                                       project_name=args.comet_project_name, workspace=args.comet_workspace)
@@ -119,10 +111,17 @@ def main(args=None):
                 comet_experiment.log_parameters(vars(arg_val),arg_key)
             else:
                 comet_experiment.log_parameter(arg_key, arg_val)
+            # store the transformer configuration
+            arg_key = 'init'
+            comet_experiment.log_parameters(configs._sections['init'], arg_key)
 
-        # store the transformer configuration
-        arg_key = 'init'
-        comet_experiment.log_parameters(configs._sections['init'], arg_key)
+    snapshot_path = helper.make_dir(os.path.join(args.snapshot_path, args.experiment_key))
+    result_path = helper.make_dir(os.path.join(args.log_path, args.experiment_key))
+    mfile = snapshot_path + 'transformer.h5'
+
+    # store the args and configs
+    helper.store_settings(store_object=args, json_file=result_path + 'script_arguments.args')
+    write_config_file(configs, result_path + 'config.ini')
 
     train_generator = CSVGenerator(args.annotations, batch_size=args.batch_size, tokens_file=args.vocab,
                                    i_embedding_matrix_file=args.i_embedding_matrix, o_embedding_matrix_file=args.o_embedding_matrix,
