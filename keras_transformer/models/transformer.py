@@ -347,7 +347,7 @@ def transformer_inference(model):
     return Model([src_seq, tgt_seq], classification)
 
 
-def transformer(transformer_structure, inputs=None, active_layers=999, sublayers=None):
+def transformer(transformer_structure, inputs=None, active_layers=999, sublayers=None, return_att=False):
     if inputs is None:
         src_seq_input = Input(shape=(None,), dtype='int32')
         tgt_seq_input = Input(shape=(None,), dtype='int32')
@@ -365,8 +365,12 @@ def transformer(transformer_structure, inputs=None, active_layers=999, sublayers
     tgt_pos = Lambda(transformer_structure.get_pos_seq)(tgt_seq)
     if not transformer_structure.src_loc_info: src_pos = None
 
-    enc_output = transformer_structure.encoder(src_seq, src_pos, active_layers=active_layers)
-    dec_output = transformer_structure.decoder(tgt_seq, tgt_pos, src_seq, enc_output, active_layers=active_layers)
+    if return_att:
+        enc_output, enc_attn = transformer_structure.encoder(src_seq, src_pos, active_layers=active_layers, return_att=True)
+        dec_output, dec_self_attn, dec_attn = transformer_structure.decoder(tgt_seq, tgt_pos, src_seq, enc_output, active_layers=active_layers, return_att=True)
+    else:
+        enc_output = transformer_structure.encoder(src_seq, src_pos, active_layers=active_layers)
+        dec_output = transformer_structure.decoder(tgt_seq, tgt_pos, src_seq, enc_output, active_layers=active_layers)
     if sublayers is not None:
         final_output = []
         for sublayer in sublayers:
@@ -374,5 +378,7 @@ def transformer(transformer_structure, inputs=None, active_layers=999, sublayers
 
     else:
         final_output = default_classification_layer(transformer_structure.o_tokens.num())(dec_output)
-
-    return Model([src_seq_input, tgt_seq_input], final_output)
+    if return_att:
+        return Model([src_seq_input, tgt_seq_input], final_output), enc_attn, dec_self_attn, dec_attn
+    else:
+        return Model([src_seq_input, tgt_seq_input], final_output)
