@@ -1,4 +1,3 @@
-*.h5
 .DS_Store
 *.pyc
 *.pyo
@@ -9,3 +8,6 @@ dist
 .idea
 *.egg-info
 .venv
+*.h5
+logs
+snapshots
