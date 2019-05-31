@@ -87,7 +87,7 @@ def main(args=None):
         tgt_padded_line = helper.parenthesis_split(x, delimiter=" ", lparen="[", rparen="]")
         tgt_seq = _make_src_seq_matrix(tgt_padded_line, o_tokens)
         # the last, second last and the first layer are the most interpretable. attention[2]-> dec_attn contains the input-output attention
-        get_attention = K.function(model.input, [enc_attn[0], dec_self_attn[0], dec_attn[0]])
+        get_attention = K.function(model.input, [enc_attn[3], dec_self_attn[3], dec_attn[3]])
         attention = get_attention([src_seq, tgt_seq])
         # print('encoder attention', attention[0], 'decoder self attention', attention[1], 'decoder attention', attention[2])
 
@@ -95,7 +95,8 @@ def main(args=None):
         padded_line.extend(['<EOS>', '<PAD>'])
         tgt_padded_line.insert(0, '<BOS>')
         tgt_padded_line.extend(['<EOS>'])
-        visualize.plot_attention_map(tgt_padded_line, padded_line, np.transpose(attention[2][1])) #np.transpose(np.mean(attention[2], axis=0))
+        visualize.plot_attention_map(tgt_padded_line, padded_line, np.transpose(attention[2]))
+        # visualize.plot_attention_map(padded_line, tgt_padded_line, attention[2]) #np.transpose(np.mean(attention[2], axis=0))
         # end visualization
 
 

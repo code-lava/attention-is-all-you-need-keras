@@ -66,12 +66,12 @@ def parse_args(args):
 
     parser.add_argument('--snapshot-path', help='The snapshot directory.', default='../../snapshots')
     parser.add_argument('--log-path',
-                        help='The logging directory.', default='../../results')
+                        help='The logging directory.', default='../../logs')
     parser.add_argument('--config',
                         help='The configuration file.', default='config.ini')
 
     parser.add_argument('--batch-size', help='The size of a single batch.', type=int, default=64)
-    parser.add_argument('--epochs', help='Number of epochs.', type=int, default=30)
+    parser.add_argument('--epochs', help='Number of epochs.', type=int, default=40)
     parser.add_argument('--steps', help='Number of steps per epoch.', type=int, default=None)
 
     parser.add_argument('--experiment-tag', help='A tag to identify the experiment by.', type=str,
@@ -153,6 +153,7 @@ def main(args=None):
     lr_scheduler = LRSchedulerPerStep(configs['init']['d_model'], 4000)
 
     training_model.compile(
+        metrics={'transformer_classification': metrics.masked_accuracy(layer_size=int(configs['init']['len_limit']))},
         loss={'transformer_classification': losses.masked_ce(layer_size=int(configs['init']['len_limit']))},
         optimizer=deserialize({'class_name': configs['optimizer']['class_name'],
                                'config':eval(configs['optimizer']['config'])}))

@@ -12,7 +12,7 @@ if __name__ == "__main__" and __package__ is None:
 
 from ..utils import helper
 from ..preprocessing import dataloader as dd
-from ..utils.evaluation.e2emetrics import measure_scores
+from e2emetrics import measure_scores
 from ..models.transformer import transformer, transformer_inference, Transformer
 from ..utils.eval import _beam_search, _decode_sequence
 from ..utils.config import read_config_file
@@ -23,10 +23,10 @@ def parse_args(args):
 
     parser = argparse.ArgumentParser(description='Evaluation script which generates sentences and then evaluates using metrics: BLEU, NIST, ROUGE,_L, CIDEr, METEOR.')
 
-    parser.add_argument('snapshot', help ='Resume training from a snapshot.')
+    parser.add_argument('snapshot', help ='Load a snapshot.')
     parser.add_argument('val_annotations', help='Path to validation source and target sequences file (both separated by a tab).')
+    parser.add_argument('vocab', help='Load an already existing vocabulary file.')
     parser.add_argument('--val-golden-set', help='Path to the human annotated golden set for validation.')
-    parser.add_argument('vocab', help='Load an already existing vocabulary file (optional).')
     parser.add_argument('--evaluate-metrics',
                         help='If set to true, will evaluate on e2e-metrics and saves the output results.', action='store_true',
                         default=False)
@@ -46,7 +46,7 @@ def parse_args(args):
                         help='The configuration file.', default='config.ini')
     parser.add_argument('--log-path',
                         help='The logging directory including.',
-                        default='../../log')
+                        default='../../logs')
 
     return parser.parse_args(args)
 
@@ -86,7 +86,7 @@ def main(args=None):
 
     if args.generate:
         outputs = []
-        next(lines) # skip the first line
+        lines = lines[1:] # skip the first line
         for line_raw in tqdm(lines, mininterval=2, desc='  - (Test)', leave=False):
             line_raw = line_raw.split('\t')
             padded_line = helper.parenthesis_split(line_raw[0], delimiter=' ', lparen="[", rparen="]")
@@ -109,7 +109,9 @@ def main(args=None):
                                        input_seq=padded_line,
                                        i_tokens=i_tokens,
                                        o_tokens=o_tokens,
-                                       len_limit=int(configs['init']['len_limit']))
+                                       len_limit=int(configs['init']['len_limit']), delimiter=' ')
+                if args.verbose:
+                    print(ret)
                 outputs.append(ret)
 
         with open(baseline_file, 'w') as fbase:
