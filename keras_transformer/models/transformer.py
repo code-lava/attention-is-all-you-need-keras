@@ -382,6 +382,7 @@ def transformer(transformer_structure, inputs=None, active_layers=999, sublayers
     if sublayers is not None:
         final_output = []
         for sublayer in sublayers:
+            # TODO (fabawi): could try to branch from the encoder instead : enc_output
             final_output.append(sublayer[1](dec_output))
 
     else:
