@@ -355,7 +355,7 @@ def transformer_inference(model):
     return Model([src_seq, tgt_seq], classification)
 
 
-def transformer(transformer_structure, inputs=None, active_layers=999, sublayers=None, return_att=False):
+def transformer(transformer_structure, inputs=None, active_layers=999, sublayers=None, return_att=False, encoder_only=False):
     if inputs is None:
         src_seq_input = Input(shape=(None,), dtype='int32')
         tgt_seq_input = Input(shape=(None,), dtype='int32')
@@ -375,14 +375,19 @@ def transformer(transformer_structure, inputs=None, active_layers=999, sublayers
 
     if return_att:
         enc_output, enc_attn = transformer_structure.encoder(src_seq, src_pos, active_layers=active_layers, return_att=True)
-        dec_output, dec_self_attn, dec_attn = transformer_structure.decoder(tgt_seq, tgt_pos, src_seq, enc_output, active_layers=active_layers, return_att=True)
+        if encoder_only:
+            dec_output = enc_output
+        else:
+            dec_output, dec_self_attn, dec_attn = transformer_structure.decoder(tgt_seq, tgt_pos, src_seq, enc_output, active_layers=active_layers, return_att=True)
     else:
         enc_output = transformer_structure.encoder(src_seq, src_pos, active_layers=active_layers)
-        dec_output = transformer_structure.decoder(tgt_seq, tgt_pos, src_seq, enc_output, active_layers=active_layers)
+        if encoder_only:
+            dec_output = enc_output
+        else:
+            dec_output = transformer_structure.decoder(tgt_seq, tgt_pos, src_seq, enc_output, active_layers=active_layers)
     if sublayers is not None:
         final_output = []
         for sublayer in sublayers:
-            # TODO (fabawi): could try to branch from the encoder instead : enc_output
             final_output.append(sublayer[1](dec_output))
 
     else:
